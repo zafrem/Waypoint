@@ -89,14 +89,6 @@ For Gemini clients that support MCP (like Gemini Developer API or compatible too
 WAYPOINT_USER_ID=user-jane-smith npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
-## Screenshots
-
-<p align="center">
-  <img src="images/sample1.jpg" alt="Dashboard View" width="30%">
-  <img src="images/sample2.jpg" alt="Organization Hierarchy" width="30%">
-  <img src="images/sample3.jpg" alt="Goal Management" width="30%">
-</p>
-
 ## MCP Resources & Tools
 
 ### Resource
