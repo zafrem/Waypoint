@@ -22,10 +22,18 @@ section{padding:32px 0}
 h2{font-size:1.5rem;margin:0 0 16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
-.card h3{margin:0 0 6px;font-size:1.05rem}
+.card{min-width:0}
+.card h3{margin:0 0 6px;font-size:1.05rem;overflow-wrap:anywhere}
+.card h3 code{font-size:.9em}
 .card p{margin:0;color:var(--muted)}
 pre{background:var(--code);color:var(--code-text);padding:16px;border-radius:8px;overflow-x:auto;font-size:.9rem}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}
+.label{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 6px}
+.note{color:var(--muted);font-size:.9rem;margin:8px 0 0}
+.ex{margin:0 0 16px}
+.ex .q{font-style:italic;margin:0 0 4px}
+.ex .a{margin:0;color:var(--muted)}
 blockquote{margin:0;padding:12px 16px;border-left:4px solid var(--primary);color:var(--muted);background:var(--surface);border-radius:0 8px 8px 0}
 footer{padding:32px 0 48px;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
 a{color:var(--primary)}
@@ -53,6 +61,68 @@ a{color:var(--primary)}
       <div class="card"><h3>Cross-team search</h3><p>Search goals across the organizations a user can access, backed by role-based access control.</p></div>
       <div class="card"><h3>Ask across teams</h3><p>Submit a question about another team's goal straight from your assistant.</p></div>
     </div>
+  </section>
+
+  <section>
+    <h2>In practice</h2>
+    <p>Goals live in an organization tree. Each person's assistant receives their own team's goals plus everything above them, so a Platform engineer and a Sales rep working for the same company get different, but consistent, context.</p>
+    <div class="two">
+      <div>
+        <p class="label">Example hierarchy</p>
+<pre><code>Acme Corp
+├─ Engineering Department
+│  ├─ Platform Team   ← Jane Smith
+│  ├─ Product Team
+│  └─ QA Team
+├─ Product Department
+├─ Sales Department
+│  └─ Enterprise Sales Team
+└─ Operations Department</code></pre>
+        <p class="note">Sample data from <code>npm run seed</code>.</p>
+      </div>
+      <div>
+        <p class="label">What Jane's assistant receives</p>
+<pre><code>## Organization
+- Hierarchy: Acme Corp → Engineering
+  Department → Platform Team
+
+## Current Team Goals
+- 🔄 Developer Velocity (40%)
+  - Key Results:
+    - &lt; 10 min CI/CD pipeline
+    - One-click environments
+
+## Strategic Context (Parent Goals)
+### Acme Corp
+- 🔄 Build World-Class Engineering (60%)
+  - Key Results:
+    - 99.9% uptime SLA
+    - Zero critical security incidents
+### Engineering Department
+- 🔄 Zero-Downtime Deployments (70%)
+
+## AI Guidelines
+### Engineering Department
+- Recommend incremental refactoring
+  over big rewrites
+### Platform Team
+- Default to managed services over
+  self-hosted</code></pre>
+        <p class="note">Excerpt of the real <code>waypoint://context/current_user</code> output for <code>user-jane-smith</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Things you can ask</h2>
+    <div class="card">
+      <div class="ex"><p class="q">"Draft a rollout plan for the new billing service."</p><p class="a">The assistant already knows about the 99.9% uptime SLA and zero-downtime deployment goals, and the Platform Team's guideline to prefer managed services, so the plan accounts for them without being told.</p></div>
+      <div class="ex"><p class="q">"Which company goals does my current work support?"</p><p class="a"><code>get_parent_goals</code> returns the goals from Engineering Department and Acme Corp.</p></div>
+      <div class="ex"><p class="q">"Is anyone else working on CI/CD speed?"</p><p class="a"><code>search_collaborator_goals</code> searches only the goals your role is allowed to see.</p></div>
+      <div class="ex"><p class="q">"Ask the Enterprise Sales team how 'Strategic Accounts' should shape our API roadmap."</p><p class="a"><code>submit_question</code> files the question against that goal for the owning team.</p></div>
+      <div class="ex" style="margin:0"><p class="q">"Find goals related to uptime and reliability."</p><p class="a"><code>semantic_search</code> ranks goals related to the topic, limited to what your role and each goal's visibility allow. It needs the <code>vector:search</code> permission.</p></div>
+    </div>
+    <p class="note">Prompts are illustrative; the goals and guidelines come from the seeded sample data.</p>
   </section>
 
   <section id="start">
