@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isMcpDisabled } from '../../services/mcpAccess.js';
 import { getConfig } from '../../config/index.js';
 import { getUserById } from '../../models/user.js';
 import { getAllGoals } from '../../models/goal.js';
@@ -43,6 +44,13 @@ export function semanticSearch(input: SemanticSearchInput): SemanticSearchResult
     return {
       success: false,
       error: `User with ID "${config.userId}" not found.`,
+    };
+  }
+
+  if (isMcpDisabled(user)) {
+    return {
+      success: false,
+      error: 'Not available.',
     };
   }
 

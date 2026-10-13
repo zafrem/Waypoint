@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isConfiguredUserMcpDisabled } from '../../services/mcpAccess.js';
 import { getOrganizationById, getOrganizationPath } from '../../models/organization.js';
 import { getGoalsByOrgIds } from '../../models/goal.js';
 import { Goal, Organization } from '../../models/types.js';
@@ -31,6 +32,13 @@ export interface GetParentGoalsResult {
 }
 
 export function getParentGoals(input: GetParentGoalsInput): GetParentGoalsResult {
+  if (isConfiguredUserMcpDisabled()) {
+    return {
+      success: false,
+      error: 'Not available.',
+    };
+  }
+
   const org = getOrganizationById(input.org_id);
 
   if (!org) {

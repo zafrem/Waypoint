@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isMcpDisabled } from '../../services/mcpAccess.js';
 import { getConfig } from '../../config/index.js';
 import { getUserById } from '../../models/user.js';
 import { getOrganizationById } from '../../models/organization.js';
@@ -48,6 +49,13 @@ export function searchCollaboratorGoals(
     return {
       success: false,
       error: `User with ID "${config.userId}" not found.`,
+    };
+  }
+
+  if (isMcpDisabled(user)) {
+    return {
+      success: false,
+      error: 'Not available.',
     };
   }
 

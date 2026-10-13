@@ -34,6 +34,10 @@
         <dd>${organization ? `<a href="/organizations/${organization.id}">${organization.name}</a>` : 'Unknown'}</dd>
       </div>
       <div class="config-item">
+        <dt>MCP Access</dt>
+        <dd>${mcpStatus.disabled ? `<span class="badge badge-warning">Disabled${mcpStatus.source === 'inherited' ? ' (inherited)' : ''}</span>` : 'Enabled'}</dd>
+      </div>
+      <div class="config-item">
         <dt>Created</dt>
         <dd>${new Date(targetUser.createdAt).toLocaleString()}</dd>
       </div>

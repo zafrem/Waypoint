@@ -3,6 +3,7 @@ import { getAllUsers, getUserById, updateUser } from '../../models/user.js';
 import { getOrganizationById, getAllOrganizations } from '../../models/organization.js';
 import { getGoalsByOwnerId } from '../../models/goal.js';
 import { getAllRoles, getRoleById } from '../../models/role.js';
+import { getUserMcpStatus } from '../../services/mcpAccess.js';
 
 export async function usersRoutes(server: FastifyInstance): Promise<void> {
   server.get('/users', async (request, reply) => {
@@ -14,10 +15,13 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
     const orgMap = new Map(organizations.map((org) => [org.id, org.name]));
     const roleMap = new Map(roles.map((role) => [role.id, role.name]));
 
+    const mcpStatus = new Map(users.map((u) => [u.id, getUserMcpStatus(u)]));
+
     return reply.view('users/index.ejs', {
       title: 'Users - Waypoint',
       user: request.user,
       users,
+      mcpStatus,
       orgMap,
       roleMap,
     });
@@ -48,6 +52,7 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
       organization,
       goals,
       role,
+      mcpStatus: getUserMcpStatus(targetUser),
     });
   });
 
@@ -84,10 +89,11 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
       email?: string;
       jobFunction?: string;
       roleId?: string;
+      mcpDisabled?: string;
     };
   }>('/users/:id', async (request, reply) => {
     const { id } = request.params;
-    const { name, email, jobFunction, roleId } = request.body;
+    const { name, email, jobFunction, roleId, mcpDisabled } = request.body;
 
     const targetUser = getUserById(id);
     if (!targetUser) {
@@ -103,6 +109,8 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
       email: email?.trim() || undefined,
       jobFunction: jobFunction?.trim() || undefined,
       roleId: roleId || null,
+      // Only admins may change MCP access; ignore the field for everyone else.
+      mcpDisabled: request.user?.isAdmin ? mcpDisabled === '1' : undefined,
     });
 
     return reply.redirect(`/users/${id}?success=User updated`);

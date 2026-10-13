@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS organizations (
   name TEXT NOT NULL,
   description TEXT,
   ai_guidelines TEXT,
+  mcp_disabled INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS users (
   job_function TEXT,
   is_admin INTEGER NOT NULL DEFAULT 0,
   is_leader INTEGER NOT NULL DEFAULT 0,
+  mcp_disabled INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

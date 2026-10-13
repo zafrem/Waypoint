@@ -11,6 +11,7 @@ export interface CreateUserInput {
   jobFunction?: string | null;
   isAdmin?: boolean;
   isLeader?: boolean;
+  mcpDisabled?: boolean;
 }
 
 export interface UpdateUserInput {
@@ -20,6 +21,7 @@ export interface UpdateUserInput {
   jobFunction?: string | null;
   isAdmin?: boolean;
   isLeader?: boolean;
+  mcpDisabled?: boolean;
 }
 
 export function createUser(input: CreateUserInput): User {
@@ -28,8 +30,8 @@ export function createUser(input: CreateUserInput): User {
   const now = new Date().toISOString();
 
   const stmt = db.prepare(`
-    INSERT INTO users (id, org_id, role_id, name, email, job_function, is_admin, is_leader, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO users (id, org_id, role_id, name, email, job_function, is_admin, is_leader, mcp_disabled, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   stmt.run(
@@ -41,6 +43,7 @@ export function createUser(input: CreateUserInput): User {
     input.jobFunction ?? null,
     input.isAdmin ? 1 : 0,
     input.isLeader ? 1 : 0,
+    input.mcpDisabled ? 1 : 0,
     now,
     now
   );
@@ -107,6 +110,10 @@ export function updateUser(id: string, input: UpdateUserInput): User | null {
   if (input.isLeader !== undefined) {
     updates.push('is_leader = ?');
     values.push(input.isLeader ? 1 : 0);
+  }
+  if (input.mcpDisabled !== undefined) {
+    updates.push('mcp_disabled = ?');
+    values.push(input.mcpDisabled ? 1 : 0);
   }
 
   if (updates.length === 0) return existing;

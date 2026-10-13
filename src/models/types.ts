@@ -22,6 +22,7 @@ export interface Organization {
   name: string;
   description: string | null;
   aiGuidelines: string | null;
+  mcpDisabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -35,6 +36,7 @@ export interface User {
   jobFunction: string | null;
   isAdmin: boolean;
   isLeader: boolean;
+  mcpDisabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -122,6 +124,7 @@ export interface OrganizationRow {
   name: string;
   description: string | null;
   ai_guidelines: string | null;
+  mcp_disabled: number;
   created_at: string;
   updated_at: string;
 }
@@ -135,6 +138,7 @@ export interface UserRow {
   job_function: string | null;
   is_admin: number;
   is_leader: number;
+  mcp_disabled: number;
   created_at: string;
   updated_at: string;
 }
@@ -215,6 +219,7 @@ export function toOrganization(row: OrganizationRow): Organization {
     name: row.name,
     description: row.description,
     aiGuidelines: row.ai_guidelines,
+    mcpDisabled: row.mcp_disabled === 1,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -230,6 +235,7 @@ export function toUser(row: UserRow): User {
     jobFunction: row.job_function,
     isAdmin: row.is_admin === 1,
     isLeader: row.is_leader === 1,
+    mcpDisabled: row.mcp_disabled === 1,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

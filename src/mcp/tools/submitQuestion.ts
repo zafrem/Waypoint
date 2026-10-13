@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isMcpDisabled } from '../../services/mcpAccess.js';
 import { getConfig } from '../../config/index.js';
 import { getUserById } from '../../models/user.js';
 import { getGoalById } from '../../models/goal.js';
@@ -39,6 +40,13 @@ export function submitQuestion(input: SubmitQuestionInput): SubmitQuestionResult
     return {
       success: false,
       error: `User with ID "${config.userId}" not found.`,
+    };
+  }
+
+  if (isMcpDisabled(user)) {
+    return {
+      success: false,
+      error: 'Not available.',
     };
   }
 

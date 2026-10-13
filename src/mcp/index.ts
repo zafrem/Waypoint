@@ -9,6 +9,7 @@ import {
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+import { isConfiguredUserMcpDisabled } from '../services/mcpAccess.js';
 
 import { CURRENT_USER_RESOURCE_URI, getCurrentUserResource } from './resources/currentUser.js';
 import {
@@ -48,7 +49,10 @@ export function createMcpServer(): Server {
   );
 
   // Register resource handlers
+  // When MCP access is disabled for the configured user (or their organization), the server
+  // advertises nothing and rejects direct calls as if the resource, prompt or tool did not exist.
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
+    if (isConfiguredUserMcpDisabled()) return { resources: [] };
     return {
       resources: [
         {
@@ -65,7 +69,7 @@ export function createMcpServer(): Server {
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const { uri } = request.params;
 
-    if (uri === CURRENT_USER_RESOURCE_URI) {
+    if (uri === CURRENT_USER_RESOURCE_URI && !isConfiguredUserMcpDisabled()) {
       const resource = getCurrentUserResource();
       if (!resource) {
         throw new Error('Failed to get current user resource');
@@ -80,6 +84,7 @@ export function createMcpServer(): Server {
 
   // Register prompt handlers
   server.setRequestHandler(ListPromptsRequestSchema, async () => {
+    if (isConfiguredUserMcpDisabled()) return { prompts: [] };
     return {
       prompts: [
         {
@@ -101,7 +106,7 @@ export function createMcpServer(): Server {
   server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
 
-    if (name === ASK_WITH_CONTEXT_PROMPT_NAME) {
+    if (name === ASK_WITH_CONTEXT_PROMPT_NAME && !isConfiguredUserMcpDisabled()) {
       return getAskWithContextPrompt(args);
     }
 
@@ -110,6 +115,7 @@ export function createMcpServer(): Server {
 
   // Register tool handlers
   server.setRequestHandler(ListToolsRequestSchema, async () => {
+    if (isConfiguredUserMcpDisabled()) return { tools: [] };
     return {
       tools: [
         {
@@ -182,6 +188,10 @@ export function createMcpServer(): Server {
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
+
+    if (isConfiguredUserMcpDisabled()) {
+      throw new Error(`Unknown tool: ${name}`);
+    }
 
     switch (name) {
       case 'get_parent_goals': {

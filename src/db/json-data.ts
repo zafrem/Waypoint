@@ -84,8 +84,8 @@ export function importFromJson(data: JsonExport, options?: ImportOptions): void 
     // Import organizations (sorted so parents come before children)
     const sortedOrgs = sortOrganizationsByHierarchy(data.data.organizations);
     const insertOrg = db.prepare(`
-      INSERT INTO organizations (id, parent_id, name, description, ai_guidelines, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO organizations (id, parent_id, name, description, ai_guidelines, mcp_disabled, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
     for (const org of sortedOrgs) {
       const now = new Date().toISOString();
@@ -95,6 +95,7 @@ export function importFromJson(data: JsonExport, options?: ImportOptions): void 
         org.name,
         org.description,
         org.aiGuidelines,
+        org.mcpDisabled ? 1 : 0,
         opts.preserveTimestamps ? org.createdAt : now,
         opts.preserveTimestamps ? org.updatedAt : now
       );
@@ -102,8 +103,8 @@ export function importFromJson(data: JsonExport, options?: ImportOptions): void 
 
     // Import users
     const insertUser = db.prepare(`
-      INSERT INTO users (id, org_id, name, email, job_function, is_admin, is_leader, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, org_id, name, email, job_function, is_admin, is_leader, mcp_disabled, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     for (const user of data.data.users) {
       const now = new Date().toISOString();
@@ -115,6 +116,7 @@ export function importFromJson(data: JsonExport, options?: ImportOptions): void 
         user.jobFunction,
         user.isAdmin ? 1 : 0,
         user.isLeader ? 1 : 0,
+        user.mcpDisabled ? 1 : 0,
         opts.preserveTimestamps ? user.createdAt : now,
         opts.preserveTimestamps ? user.updatedAt : now
       );

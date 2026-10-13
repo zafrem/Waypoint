@@ -19,7 +19,7 @@
       <tbody>
         ${organizations.map(org => `
         <tr>
-          <td><a href="/organizations/${org.id}">${org.name}</a></td>
+          <td><a href="/organizations/${org.id}">${org.name}</a> ${mcpStatus.get(org.id) && mcpStatus.get(org.id).disabled ? `<span class="badge badge-warning">MCP off${mcpStatus.get(org.id).source === 'inherited' ? ' (inherited)' : ''}</span>` : ''}</td>
           <td>${org.description || '-'}</td>
           <td>${new Date(org.createdAt).toLocaleDateString()}</td>
           <td>

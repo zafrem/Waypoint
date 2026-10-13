@@ -12,12 +12,14 @@ export interface CreateOrganizationInput {
   name: string;
   description?: string | null;
   aiGuidelines?: string | null;
+  mcpDisabled?: boolean;
 }
 
 export interface UpdateOrganizationInput {
   name?: string;
   description?: string | null;
   aiGuidelines?: string | null;
+  mcpDisabled?: boolean;
 }
 
 export function createOrganization(input: CreateOrganizationInput): Organization {
@@ -26,8 +28,8 @@ export function createOrganization(input: CreateOrganizationInput): Organization
   const now = new Date().toISOString();
 
   const stmt = db.prepare(`
-    INSERT INTO organizations (id, parent_id, name, description, ai_guidelines, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO organizations (id, parent_id, name, description, ai_guidelines, mcp_disabled, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   stmt.run(
@@ -36,6 +38,7 @@ export function createOrganization(input: CreateOrganizationInput): Organization
     input.name,
     input.description ?? null,
     input.aiGuidelines ?? null,
+    input.mcpDisabled ? 1 : 0,
     now,
     now
   );
@@ -112,7 +115,7 @@ export function updateOrganization(
   if (!existing) return null;
 
   const updates: string[] = [];
-  const values: (string | null)[] = [];
+  const values: (string | number | null)[] = [];
 
   if (input.name !== undefined) {
     updates.push('name = ?');
@@ -125,6 +128,10 @@ export function updateOrganization(
   if (input.aiGuidelines !== undefined) {
     updates.push('ai_guidelines = ?');
     values.push(input.aiGuidelines);
+  }
+  if (input.mcpDisabled !== undefined) {
+    updates.push('mcp_disabled = ?');
+    values.push(input.mcpDisabled ? 1 : 0);
   }
 
   if (updates.length === 0) return existing;

@@ -53,19 +53,19 @@ function importJsonData(database: Database.Database, data: any): void {
     const sortedOrgs = sortOrgsByHierarchy(data.data.organizations);
 
     const insertOrg = database.prepare(`
-      INSERT INTO organizations (id, parent_id, name, description, ai_guidelines, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO organizations (id, parent_id, name, description, ai_guidelines, mcp_disabled, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
     for (const org of sortedOrgs) {
-      insertOrg.run(org.id, org.parentId, org.name, org.description, org.aiGuidelines, org.createdAt, org.updatedAt);
+      insertOrg.run(org.id, org.parentId, org.name, org.description, org.aiGuidelines, org.mcpDisabled ? 1 : 0, org.createdAt, org.updatedAt);
     }
 
     const insertUser = database.prepare(`
-      INSERT INTO users (id, org_id, role_id, name, email, job_function, is_admin, is_leader, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, org_id, role_id, name, email, job_function, is_admin, is_leader, mcp_disabled, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     for (const user of data.data.users) {
-      insertUser.run(user.id, user.orgId, user.roleId || null, user.name, user.email, user.jobFunction, user.isAdmin ? 1 : 0, user.isLeader ? 1 : 0, user.createdAt, user.updatedAt);
+      insertUser.run(user.id, user.orgId, user.roleId || null, user.name, user.email, user.jobFunction, user.isAdmin ? 1 : 0, user.isLeader ? 1 : 0, user.mcpDisabled ? 1 : 0, user.createdAt, user.updatedAt);
     }
 
     const insertGoal = database.prepare(`
@@ -130,6 +130,12 @@ function initializeSchema(): void {
   const goalColumns = db.prepare('PRAGMA table_info(goals)').all() as { name: string }[];
   if (!goalColumns.some((c) => c.name === 'standards')) {
     db.exec('ALTER TABLE goals ADD COLUMN standards TEXT');
+  }
+  for (const table of ['organizations', 'users']) {
+    const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+    if (!columns.some((c) => c.name === 'mcp_disabled')) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN mcp_disabled INTEGER NOT NULL DEFAULT 0`);
+    }
   }
 }
 

@@ -121,6 +121,17 @@ WAYPOINT_USER_ID=user-jane-smith npx @modelcontextprotocol/inspector node dist/i
 | `submit_question` | Submit a question about a goal from another team |
 | `semantic_search` | Search goals across the organization for a topic, limited by your role and goal visibility (requires the `vector:search` permission) |
 
+## Disabling MCP Access
+
+Admins can switch off the MCP side (the `waypoint://context/current_user` resource, the `ask_with_context` prompt and all tools) for a single user or for a whole organization. Web login is not affected.
+
+- Tick **Disable MCP access** on a user's or an organization's edit page (admins only).
+- Disabling an organization also disables every user in it and in all of its sub-organizations. Disabling Engineering Department also covers the Platform, Product and QA teams.
+- For a disabled user the MCP server simply does nothing: it lists no resource, no prompt and no tools, and any direct call fails as if it didn't exist. No notice or explanation is shown, and `ask_with_context` passes the question through without any context.
+- The check runs on every request, so changing the flag takes effect without restarting the server.
+- The user and organization lists show an **MCP off** badge, or **MCP off (inherited)** when it comes from a parent organization.
+- The flag is included in `npm run export` / `npm run import`. Existing databases get the new columns automatically on the next start.
+
 ## Available Scripts
 
 | Script | Description |

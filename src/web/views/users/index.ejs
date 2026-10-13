@@ -20,7 +20,7 @@
       <tbody>
         ${users.map(u => `
         <tr>
-          <td><a href="/users/${u.id}">${u.name}</a></td>
+          <td><a href="/users/${u.id}">${u.name}</a> ${mcpStatus.get(u.id) && mcpStatus.get(u.id).disabled ? `<span class="badge badge-warning">MCP off${mcpStatus.get(u.id).source === 'inherited' ? ' (inherited)' : ''}</span>` : ''}</td>
           <td>${u.email}</td>
           <td><a href="/organizations/${u.orgId}">${orgMap.get(u.orgId) || 'Unknown'}</a></td>
           <td><span class="badge">${roleMap.get(u.roleId) || 'No Role'}</span></td>
