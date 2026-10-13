@@ -104,6 +104,7 @@ WAYPOINT_USER_ID=user-jane-smith npx @modelcontextprotocol/inspector node dist/i
 | `get_parent_goals` | Get goals from parent organizations for strategic context |
 | `search_collaborator_goals` | Search goals across accessible organizations |
 | `submit_question` | Submit a question about a goal from another team |
+| `semantic_search` | Search goals across the organization for a topic, limited by your role and goal visibility (requires the `vector:search` permission) |
 
 ## Available Scripts
 
