@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 export interface CreateUserInput {
   id?: string;
   orgId: string;
+  roleId?: string | null;
   name: string;
   email: string;
   jobFunction?: string | null;
@@ -13,6 +14,7 @@ export interface CreateUserInput {
 }
 
 export interface UpdateUserInput {
+  roleId?: string | null;
   name?: string;
   email?: string;
   jobFunction?: string | null;
@@ -26,13 +28,14 @@ export function createUser(input: CreateUserInput): User {
   const now = new Date().toISOString();
 
   const stmt = db.prepare(`
-    INSERT INTO users (id, org_id, name, email, job_function, is_admin, is_leader, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO users (id, org_id, role_id, name, email, job_function, is_admin, is_leader, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   stmt.run(
     id,
     input.orgId,
+    input.roleId ?? null,
     input.name,
     input.email,
     input.jobFunction ?? null,
@@ -81,6 +84,10 @@ export function updateUser(id: string, input: UpdateUserInput): User | null {
   const updates: string[] = [];
   const values: (string | number | null)[] = [];
 
+  if (input.roleId !== undefined) {
+    updates.push('role_id = ?');
+    values.push(input.roleId);
+  }
   if (input.name !== undefined) {
     updates.push('name = ?');
     values.push(input.name);

@@ -27,6 +27,10 @@ import {
   submitQuestion,
   submitQuestionSchema,
 } from './tools/submitQuestion.js';
+import {
+  semanticSearch,
+  semanticSearchSchema,
+} from './tools/semanticSearch.js';
 
 export function createMcpServer(): Server {
   const server = new Server(
@@ -157,6 +161,21 @@ export function createMcpServer(): Server {
             required: ['goal_id', 'question'],
           },
         },
+        {
+          name: 'semantic_search',
+          description:
+            'Perform a semantic vector search across organizational goals to find alignment and context. Requires specialized permissions.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              query: {
+                type: 'string',
+                description: 'The semantic search query',
+              },
+            },
+            required: ['query'],
+          },
+        },
       ],
     };
   });
@@ -194,6 +213,19 @@ export function createMcpServer(): Server {
       case 'submit_question': {
         const input = submitQuestionSchema.parse(args);
         const result = submitQuestion(input);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'semantic_search': {
+        const input = semanticSearchSchema.parse(args);
+        const result = semanticSearch(input);
         return {
           content: [
             {

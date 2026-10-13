@@ -13,7 +13,7 @@
           <th>Name</th>
           <th>Email</th>
           <th>Organization</th>
-          <th>Job Function</th>
+          <th>Role</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -23,7 +23,7 @@
           <td><a href="/users/${u.id}">${u.name}</a></td>
           <td>${u.email}</td>
           <td><a href="/organizations/${u.orgId}">${orgMap.get(u.orgId) || 'Unknown'}</a></td>
-          <td>${u.jobFunction || '-'}</td>
+          <td><span class="badge">${roleMap.get(u.roleId) || 'No Role'}</span></td>
           <td>
             <a href="/users/${u.id}" class="btn btn-sm btn-secondary">View</a>
             <a href="/users/${u.id}/edit" class="btn btn-sm btn-primary">Edit</a>

@@ -26,6 +26,10 @@
         <dd>${targetUser.jobFunction || '-'}</dd>
       </div>
       <div class="config-item">
+        <dt>System Role</dt>
+        <dd>${role ? `<strong>${role.name}</strong> - <small>${role.description}</small>` : '<span class="text-muted">No Role Assigned</span>'}</dd>
+      </div>
+      <div class="config-item">
         <dt>Organization</dt>
         <dd>${organization ? `<a href="/organizations/${organization.id}">${organization.name}</a>` : 'Unknown'}</dd>
       </div>

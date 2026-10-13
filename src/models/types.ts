@@ -29,6 +29,7 @@ export interface Organization {
 export interface User {
   id: string;
   orgId: string;
+  roleId: string | null;
   name: string;
   email: string;
   jobFunction: string | null;
@@ -38,12 +39,26 @@ export interface User {
   updatedAt: string;
 }
 
+<<<<<<< HEAD
 export type StandardType = 'document' | 'term' | 'ui_element' | 'template';
 
 export interface Standard {
   type: StandardType;
   name: string;
   content: string;
+=======
+export interface Role {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RolePermission {
+  roleId: string;
+  permission: string;
+>>>>>>> b4f15bbe673f772589e450dea9576bdec92e75d2
 }
 
 export interface Goal {
@@ -115,6 +130,7 @@ export interface OrganizationRow {
 export interface UserRow {
   id: string;
   org_id: string;
+  role_id: string | null;
   name: string;
   email: string;
   job_function: string | null;
@@ -122,6 +138,19 @@ export interface UserRow {
   is_leader: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface RoleRow {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RolePermissionRow {
+  role_id: string;
+  permission: string;
 }
 
 export interface GoalRow {
@@ -196,11 +225,22 @@ export function toUser(row: UserRow): User {
   return {
     id: row.id,
     orgId: row.org_id,
+    roleId: row.role_id,
     name: row.name,
     email: row.email,
     jobFunction: row.job_function,
     isAdmin: row.is_admin === 1,
     isLeader: row.is_leader === 1,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function toRole(row: RoleRow): Role {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

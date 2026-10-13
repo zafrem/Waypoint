@@ -23,6 +23,17 @@
       </div>
 
       <div class="form-group">
+        <label for="roleId">System Role</label>
+        <select id="roleId" name="roleId">
+          <option value="">-- No Role --</option>
+          ${roles.map(r => `
+            <option value="${r.id}" ${targetUser.roleId === r.id ? 'selected' : ''}>${r.name} - ${r.description}</option>
+          `).join('')}
+        </select>
+        <small class="form-help">System roles determine access level to organizational context and AI tools.</small>
+      </div>
+
+      <div class="form-group">
         <label>Organization</label>
         <p class="form-static">${organizations.find(o => o.id === targetUser.orgId)?.name || 'Unknown'}</p>
         <small class="form-help">Organization cannot be changed from this interface.</small>

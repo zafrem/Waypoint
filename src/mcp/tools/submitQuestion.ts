@@ -52,7 +52,7 @@ export function submitQuestion(input: SubmitQuestionInput): SubmitQuestionResult
 
   // Check permission to submit a question
   const relationship = computeRelationship(user.orgId, goal.orgId);
-  const canSubmitQuestion = hasPermission(relationship, 'comment:submit_question');
+  const canSubmitQuestion = hasPermission(user, relationship, 'comment:submit_question');
 
   if (!canSubmitQuestion) {
     return {

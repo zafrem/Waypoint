@@ -1,7 +1,8 @@
 import { UserContext, Organization, Goal } from '../models/types.js';
 import { getUserById } from '../models/user.js';
 import { getOrganizationById, getOrganizationPath } from '../models/organization.js';
-import { getGoalsByOrgId, getGoalsByOrgIds, parseStandards } from '../models/goal.js';
+import { getGoalsByOrgId, getGoalsByOrgIds } from '../models/goal.js';
+import { hasPermission } from '../rbac/permissions.js';
 
 /**
  * Build a complete user context for the MCP resource.
@@ -18,22 +19,34 @@ export function buildUserContext(userId: string): UserContext | null {
     return null;
   }
 
+  // Check if user has permission to access prompt input context
+  // Relationship to self is always 'SELF'
+  const hasPromptInput = hasPermission(user, 'SELF', 'prompt:input');
+
   // Get the full path from root to user's organization
   const orgPath = getOrganizationPath(user.orgId);
 
   // Get current goals (from user's organization)
+  // Always allowed for own org
   const currentGoals = getGoalsByOrgId(user.orgId);
 
   // Get parent goals (from all ancestor organizations)
-  const parentOrgIds = orgPath
-    .filter((org) => org.id !== user.orgId)
-    .map((org) => org.id);
-  const parentGoals = getGoalsByOrgIds(parentOrgIds);
+  // ONLY include if user has prompt:input permission OR is an executive
+  let parentGoals: Goal[] = [];
+  if (hasPromptInput) {
+    const parentOrgIds = orgPath
+      .filter((org) => org.id !== user.orgId)
+      .map((org) => org.id);
+    parentGoals = getGoalsByOrgIds(parentOrgIds);
+  }
 
   // Collect all AI guidelines from the org path (root to leaf)
-  const guidelines = orgPath
-    .map((org) => org.aiGuidelines)
-    .filter((g): g is string => g !== null && g.trim() !== '');
+  // Filter based on prompt:input permission
+  const guidelines = hasPromptInput
+    ? orgPath
+        .map((org) => org.aiGuidelines)
+        .filter((g): g is string => g !== null && g.trim() !== '')
+    : [organization.aiGuidelines].filter((g): g is string => g !== null && g.trim() !== '');
 
   return {
     user,

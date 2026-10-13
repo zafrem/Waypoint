@@ -2,6 +2,7 @@ import { getDb } from './index.js';
 import { createOrganization } from '../models/organization.js';
 import { createUser } from '../models/user.js';
 import { createGoal } from '../models/goal.js';
+import { createRole } from '../models/role.js';
 
 // Organization IDs
 const ORG_IDS = {
@@ -47,10 +48,20 @@ const USER_IDS = {
   HR_LEAD: 'user-hr-lead',
 };
 
+// Role IDs
+const ROLE_IDS = {
+  EXECUTIVE: 'role-executive',
+  MANAGER: 'role-manager',
+  CONTRIBUTOR: 'role-contributor',
+  AI_AGENT: 'role-ai-agent',
+};
+
 export function seedDatabase(): void {
   const db = getDb();
 
   // Clear existing data
+  db.exec('DELETE FROM role_permissions');
+  db.exec('DELETE FROM roles');
   db.exec('DELETE FROM comments');
   db.exec('DELETE FROM goals');
   db.exec('DELETE FROM users');
@@ -58,6 +69,9 @@ export function seedDatabase(): void {
 
   // Create organizations (hierarchy)
   createOrganizations();
+
+  // Create roles
+  createRoles();
 
   // Create users
   createUsers();
@@ -203,11 +217,59 @@ function createOrganizations(): void {
   });
 }
 
+function createRoles(): void {
+  createRole({
+    id: ROLE_IDS.EXECUTIVE,
+    name: 'Executive',
+    description: 'Full organizational access and strategic AI insights',
+    permissions: [
+      'goal:read', 'goal:create', 'goal:update', 'goal:delete',
+      'comment:read', 'comment:create', 'comment:submit_question', 'comment:respond',
+      'organization:read', 'organization:update',
+      'prompt:input', 'prompt:output', 'vector:search'
+    ],
+  });
+
+  createRole({
+    id: ROLE_IDS.MANAGER,
+    name: 'Manager',
+    description: 'Team management and operational AI tools',
+    permissions: [
+      'goal:read', 'goal:create', 'goal:update',
+      'comment:read', 'comment:create', 'comment:submit_question', 'comment:respond',
+      'organization:read',
+      'prompt:input', 'vector:search'
+    ],
+  });
+
+  createRole({
+    id: ROLE_IDS.CONTRIBUTOR,
+    name: 'Contributor',
+    description: 'Individual contributor with standard AI assistance',
+    permissions: [
+      'goal:read', 'goal:create', 'goal:update',
+      'comment:read', 'comment:create', 'comment:submit_question',
+      'organization:read',
+      'prompt:input'
+    ],
+  });
+
+  createRole({
+    id: ROLE_IDS.AI_AGENT,
+    name: 'AI Agent',
+    description: 'Autonomous agent for background processing',
+    permissions: [
+      'goal:read', 'comment:read', 'organization:read', 'vector:search'
+    ],
+  });
+}
+
 function createUsers(): void {
   // Admin User
   createUser({
     id: USER_IDS.ADMIN,
     orgId: ORG_IDS.ACME_CORP,
+    roleId: ROLE_IDS.EXECUTIVE,
     name: 'System Admin',
     email: 'admin@acme.com',
     jobFunction: 'System Administrator',
@@ -218,6 +280,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.CEO,
     orgId: ORG_IDS.ACME_CORP,
+    roleId: ROLE_IDS.EXECUTIVE,
     name: 'Alex Johnson',
     email: 'alex.johnson@acme.com',
     jobFunction: 'CEO',
@@ -228,6 +291,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.VP_ENGINEERING,
     orgId: ORG_IDS.ENGINEERING,
+    roleId: ROLE_IDS.EXECUTIVE,
     name: 'Sarah Chen',
     email: 'sarah.chen@acme.com',
     jobFunction: 'VP of Engineering',
@@ -237,6 +301,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.PLATFORM_LEAD,
     orgId: ORG_IDS.PLATFORM_TEAM,
+    roleId: ROLE_IDS.MANAGER,
     name: 'Mike Williams',
     email: 'mike.williams@acme.com',
     jobFunction: 'Platform Team Lead',
@@ -246,6 +311,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.JANE_SMITH,
     orgId: ORG_IDS.PLATFORM_TEAM,
+    roleId: ROLE_IDS.CONTRIBUTOR,
     name: 'Jane Smith',
     email: 'jane.smith@acme.com',
     jobFunction: 'Platform Engineer',
@@ -254,6 +320,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.PRODUCT_TEAM_LEAD,
     orgId: ORG_IDS.PRODUCT_TEAM,
+    roleId: ROLE_IDS.MANAGER,
     name: 'David Lee',
     email: 'david.lee@acme.com',
     jobFunction: 'Product Team Lead',
@@ -262,6 +329,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.QA_LEAD,
     orgId: ORG_IDS.QA_TEAM,
+    roleId: ROLE_IDS.MANAGER,
     name: 'Emily Brown',
     email: 'emily.brown@acme.com',
     jobFunction: 'QA Lead',
@@ -271,6 +339,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.VP_PRODUCT,
     orgId: ORG_IDS.PRODUCT,
+    roleId: ROLE_IDS.EXECUTIVE,
     name: 'Rachel Green',
     email: 'rachel.green@acme.com',
     jobFunction: 'VP of Product',
@@ -280,6 +349,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.STRATEGY_LEAD,
     orgId: ORG_IDS.PRODUCT_STRATEGY,
+    roleId: ROLE_IDS.MANAGER,
     name: 'Tom Harris',
     email: 'tom.harris@acme.com',
     jobFunction: 'Product Strategy Lead',
@@ -288,6 +358,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.UX_LEAD,
     orgId: ORG_IDS.UX_RESEARCH,
+    roleId: ROLE_IDS.CONTRIBUTOR,
     name: 'Lisa Wang',
     email: 'lisa.wang@acme.com',
     jobFunction: 'UX Research Lead',
@@ -297,6 +368,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.VP_SALES,
     orgId: ORG_IDS.SALES,
+    roleId: ROLE_IDS.EXECUTIVE,
     name: 'James Miller',
     email: 'james.miller@acme.com',
     jobFunction: 'VP of Sales',
@@ -305,6 +377,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.ENTERPRISE_LEAD,
     orgId: ORG_IDS.ENTERPRISE_SALES,
+    roleId: ROLE_IDS.MANAGER,
     name: 'Amanda White',
     email: 'amanda.white@acme.com',
     jobFunction: 'Enterprise Sales Lead',
@@ -313,6 +386,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.SMB_LEAD,
     orgId: ORG_IDS.SMB_SALES,
+    roleId: ROLE_IDS.CONTRIBUTOR,
     name: 'Chris Taylor',
     email: 'chris.taylor@acme.com',
     jobFunction: 'SMB Sales Lead',
@@ -322,6 +396,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.VP_OPERATIONS,
     orgId: ORG_IDS.OPERATIONS,
+    roleId: ROLE_IDS.EXECUTIVE,
     name: 'Patricia Davis',
     email: 'patricia.davis@acme.com',
     jobFunction: 'VP of Operations',
@@ -330,6 +405,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.IT_LEAD,
     orgId: ORG_IDS.IT_TEAM,
+    roleId: ROLE_IDS.MANAGER,
     name: 'Kevin Moore',
     email: 'kevin.moore@acme.com',
     jobFunction: 'IT Lead',
@@ -338,6 +414,7 @@ function createUsers(): void {
   createUser({
     id: USER_IDS.HR_LEAD,
     orgId: ORG_IDS.HR_TEAM,
+    roleId: ROLE_IDS.MANAGER,
     name: 'Nancy Wilson',
     email: 'nancy.wilson@acme.com',
     jobFunction: 'HR Lead',
@@ -593,4 +670,4 @@ function createGoals(): void {
 }
 
 // Export for programmatic use
-export { ORG_IDS, USER_IDS };
+export { ORG_IDS, USER_IDS, ROLE_IDS };

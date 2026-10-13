@@ -10,10 +10,27 @@ CREATE TABLE IF NOT EXISTS organizations (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Roles table
+CREATE TABLE IF NOT EXISTS roles (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Role permissions table
+CREATE TABLE IF NOT EXISTS role_permissions (
+  role_id TEXT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+  permission TEXT NOT NULL,
+  PRIMARY KEY (role_id, permission)
+);
+
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   org_id TEXT NOT NULL REFERENCES organizations(id),
+  role_id TEXT REFERENCES roles(id),
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
   job_function TEXT,

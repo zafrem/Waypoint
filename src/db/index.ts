@@ -61,11 +61,11 @@ function importJsonData(database: Database.Database, data: any): void {
     }
 
     const insertUser = database.prepare(`
-      INSERT INTO users (id, org_id, name, email, job_function, is_admin, is_leader, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, org_id, role_id, name, email, job_function, is_admin, is_leader, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     for (const user of data.data.users) {
-      insertUser.run(user.id, user.orgId, user.name, user.email, user.jobFunction, user.isAdmin ? 1 : 0, user.isLeader ? 1 : 0, user.createdAt, user.updatedAt);
+      insertUser.run(user.id, user.orgId, user.roleId || null, user.name, user.email, user.jobFunction, user.isAdmin ? 1 : 0, user.isLeader ? 1 : 0, user.createdAt, user.updatedAt);
     }
 
     const insertGoal = database.prepare(`
