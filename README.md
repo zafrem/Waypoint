@@ -42,6 +42,8 @@ npm run build
 npm run seed
 ```
 
+> **Run `npm install` first.** The build needs the TypeScript compiler (`tsc`), which is installed as a dev dependency. Without it, `npm run build` fails with `sh: tsc: command not found`. Run `npm install` again after pulling changes that touch `package.json`.
+
 ## Configuration
 
 Create a `.env` file based on `.env.example`:
@@ -104,6 +106,16 @@ For Gemini clients that support MCP (like Gemini Developer API or compatible too
 WAYPOINT_USER_ID=user-jane-smith npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
+## Screenshots
+
+The web UI for managing organizations, users, goals and settings (shown with the seeded sample data).
+
+| | |
+|---|---|
+| <img src="images/waypoint_dashboard.jpg" alt="Dashboard"><br><b>Dashboard</b><br>Totals and the expandable organization hierarchy, with each team’s leader and goal counts. | <img src="images/waypoint_organizations.jpg" alt="Organizations"><br><b>Organizations</b><br>Every organization in the tree, with its description and quick links to view or edit. |
+| <img src="images/waypoint_users.jpg" alt="Users"><br><b>Users</b><br>All users with their organization and system role. | <img src="images/waypoint_admin_dashboard.jpg" alt="Admin dashboard"><br><b>Admin dashboard</b><br>Quick actions to add or import personnel and to create and manage goals. |
+| <img src="images/waypoint_app_settings.jpg" alt="App settings"><br><b>App settings</b><br>Server configuration and custom application-wide settings. | <img src="images/waypoint_preferences.jpg" alt="User preferences"><br><b>User preferences</b><br>Theme, default goal visibility, locale, timezone and notifications. |
+
 ## MCP Resources & Tools
 
 ### Resource
@@ -136,6 +148,7 @@ Admins can switch off the MCP side (the `waypoint://context/current_user` resour
 
 | Script | Description |
 |--------|-------------|
+| `npm install` | Install dependencies (run this first, and again whenever `package.json` changes) |
 | `npm run build` | Compile TypeScript to JavaScript |
 | `npm run start` | Start the MCP server |
 | `npm run dev` | Build and start in one command |
