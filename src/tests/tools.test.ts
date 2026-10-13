@@ -10,14 +10,14 @@ test('MCP Tools - Semantic Search Security', async (t) => {
   setupTestDb();
 
   await t.test('Executive should be allowed to search all goals', () => {
-    process.env.NORTHSTAR_USER_ID = USER_IDS.CEO;
+    process.env.WAYPOINT_USER_ID = USER_IDS.CEO;
     const result = semanticSearch({ query: 'market leadership' });
     assert.strictEqual(result.success, true);
     assert.ok(result.results!.length > 0);
   });
 
   await t.test('Contributor should be denied if role lacks vector:search', () => {
-    process.env.NORTHSTAR_USER_ID = USER_IDS.JANE_SMITH;
+    process.env.WAYPOINT_USER_ID = USER_IDS.JANE_SMITH;
     const result = semanticSearch({ query: 'any' });
     assert.strictEqual(result.success, false);
     assert.match(result.error!, /permission/);
@@ -34,7 +34,7 @@ test('MCP Tools - Semantic Search Security', async (t) => {
     });
 
     // Jane (Platform Team) should NOT see HR goals
-    process.env.NORTHSTAR_USER_ID = USER_IDS.JANE_SMITH;
+    process.env.WAYPOINT_USER_ID = USER_IDS.JANE_SMITH;
     
     // Temporarily give Jane permission to search to test filtering
     updateUser(USER_IDS.JANE_SMITH, { roleId: 'role-executive' }); // Give her exec role for this test

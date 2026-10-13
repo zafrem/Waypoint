@@ -3,7 +3,7 @@ import { getValidSessionByToken } from '../../models/webSession.js';
 import { getUserById } from '../../models/user.js';
 import { User } from '../../models/types.js';
 
-const SESSION_COOKIE_NAME = 'northstar_session';
+const SESSION_COOKIE_NAME = 'waypoint_session';
 
 declare module 'fastify' {
   interface FastifyRequest {

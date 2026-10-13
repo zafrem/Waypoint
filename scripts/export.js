@@ -4,9 +4,9 @@ import { resolve } from 'path';
 import { saveToJsonFile } from '../dist/db/json-data.js';
 import { closeDb } from '../dist/db/index.js';
 
-const outputPath = resolve(process.cwd(), 'northstar-data.json');
+const outputPath = resolve(process.cwd(), 'waypoint-data.json');
 
-console.log('Exporting NorthStar database to JSON...');
+console.log('Exporting Waypoint database to JSON...');
 
 try {
   saveToJsonFile(outputPath);

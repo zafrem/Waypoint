@@ -35,7 +35,7 @@ import {
 export function createMcpServer(): Server {
   const server = new Server(
     {
-      name: 'northstar',
+      name: 'waypoint',
       version: '1.0.0',
     },
     {

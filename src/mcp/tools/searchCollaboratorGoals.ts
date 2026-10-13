@@ -39,7 +39,7 @@ export function searchCollaboratorGoals(
   if (!config.userId) {
     return {
       success: false,
-      error: 'NORTHSTAR_USER_ID environment variable is not set.',
+      error: 'WAYPOINT_USER_ID environment variable is not set.',
     };
   }
 

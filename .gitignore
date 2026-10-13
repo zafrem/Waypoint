@@ -157,7 +157,7 @@ vite.config.ts.timestamp-*
 .idea/
 
 # JSON data exports
-northstar-data.json
+waypoint-data.json
 
 # General Build Output
 dist/

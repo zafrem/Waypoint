@@ -12,7 +12,7 @@ export async function authRoutes(server: FastifyInstance): Promise<void> {
     }
 
     return reply.view('auth/login.ejs', {
-      title: 'Login - NorthStar',
+      title: 'Login - Waypoint',
       error: null,
     });
   });
@@ -24,7 +24,7 @@ export async function authRoutes(server: FastifyInstance): Promise<void> {
 
     if (!email || typeof email !== 'string') {
       return reply.view('auth/login.ejs', {
-        title: 'Login - NorthStar',
+        title: 'Login - Waypoint',
         error: 'Please enter your email address',
       });
     }
@@ -33,7 +33,7 @@ export async function authRoutes(server: FastifyInstance): Promise<void> {
 
     if (!user) {
       return reply.view('auth/login.ejs', {
-        title: 'Login - NorthStar',
+        title: 'Login - Waypoint',
         error: 'No user found with that email address',
       });
     }

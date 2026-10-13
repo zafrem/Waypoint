@@ -1,7 +1,7 @@
 import { UserContext, Organization, Goal } from '../models/types.js';
 import { getUserById } from '../models/user.js';
 import { getOrganizationById, getOrganizationPath } from '../models/organization.js';
-import { getGoalsByOrgId, getGoalsByOrgIds } from '../models/goal.js';
+import { getGoalsByOrgId, getGoalsByOrgIds, parseStandards } from '../models/goal.js';
 import { hasPermission } from '../rbac/permissions.js';
 
 /**

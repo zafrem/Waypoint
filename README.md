@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="images/Logo.png" alt="NotrhStar Logo" width="200">
+  <img src="images/Logo.png" alt="Waypoint Logo" width="200">
 </p>
 
-# NorthStar
+# Waypoint
 
 Define the organization's goals hierarchically and inject them into AI assistants through Model Context Protocol (MCP) to ensure that individual work aligns with the organization's direction.
 
@@ -14,8 +14,8 @@ Define the organization's goals hierarchically and inject them into AI assistant
 
 ```bash
 # Clone the repository
-git clone https://github.com/anthropics/NorthStar.git
-cd NorthStar
+git clone https://github.com/zafrem/Waypoint.git
+cd Waypoint
 
 # Install dependencies
 npm install
@@ -33,10 +33,10 @@ Create a `.env` file based on `.env.example`:
 
 ```bash
 # User ID for the current session (required)
-NORTHSTAR_USER_ID=user-jane-smith
+WAYPOINT_USER_ID=user-jane-smith
 
-# Database file path (optional, defaults to ./northstar.db)
-NORTHSTAR_DB_PATH=./northstar.db
+# Database file path (optional, defaults to ./waypoint.db)
+WAYPOINT_DB_PATH=./waypoint.db
 ```
 
 ## Usage
@@ -44,7 +44,7 @@ NORTHSTAR_DB_PATH=./northstar.db
 ### Starting the Server
 
 ```bash
-NORTHSTAR_USER_ID=user-jane-smith npm start
+WAYPOINT_USER_ID=user-jane-smith npm start
 ```
 
 ### Using with Claude Desktop
@@ -54,11 +54,11 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "northstar": {
+    "waypoint": {
       "command": "node",
-      "args": ["/path/to/NorthStar/dist/index.js"],
+      "args": ["/path/to/Waypoint/dist/index.js"],
       "env": {
-        "NORTHSTAR_USER_ID": "user-jane-smith"
+        "WAYPOINT_USER_ID": "user-jane-smith"
       }
     }
   }
@@ -72,11 +72,11 @@ For Gemini clients that support MCP (like Gemini Developer API or compatible too
 ```json
 {
   "mcpServers": {
-    "northstar": {
+    "waypoint": {
       "command": "node",
-      "args": ["/path/to/NorthStar/dist/index.js"],
+      "args": ["/path/to/Waypoint/dist/index.js"],
       "env": {
-        "NORTHSTAR_USER_ID": "user-jane-smith"
+        "WAYPOINT_USER_ID": "user-jane-smith"
       }
     }
   }
@@ -86,7 +86,7 @@ For Gemini clients that support MCP (like Gemini Developer API or compatible too
 ### Testing with MCP Inspector
 
 ```bash
-NORTHSTAR_USER_ID=user-jane-smith npx @modelcontextprotocol/inspector node dist/index.js
+WAYPOINT_USER_ID=user-jane-smith npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
 ## Screenshots
@@ -103,7 +103,7 @@ NORTHSTAR_USER_ID=user-jane-smith npx @modelcontextprotocol/inspector node dist/
 
 | URI | Description |
 |-----|-------------|
-| `northstar://context/current_user` | Returns user context with goals and AI guidelines |
+| `waypoint://context/current_user` | Returns user context with goals and AI guidelines |
 
 ### Tools
 

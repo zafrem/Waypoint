@@ -40,7 +40,7 @@ export async function createWebServer(): Promise<FastifyInstance> {
     engine: { ejs },
     root: viewsPath,
     defaultContext: {
-      title: 'NorthStar',
+      title: 'Waypoint',
     },
   });
 

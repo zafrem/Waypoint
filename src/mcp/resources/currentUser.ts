@@ -1,7 +1,7 @@
 import { getConfig } from '../../config/index.js';
 import { buildUserContext, formatUserContext } from '../../services/context.js';
 
-export const CURRENT_USER_RESOURCE_URI = 'northstar://context/current_user';
+export const CURRENT_USER_RESOURCE_URI = 'waypoint://context/current_user';
 
 export interface ResourceContent {
   uri: string;
@@ -16,7 +16,7 @@ export function getCurrentUserResource(): ResourceContent | null {
     return {
       uri: CURRENT_USER_RESOURCE_URI,
       mimeType: 'text/plain',
-      text: 'Error: NORTHSTAR_USER_ID environment variable is not set.',
+      text: 'Error: WAYPOINT_USER_ID environment variable is not set.',
     };
   }
 

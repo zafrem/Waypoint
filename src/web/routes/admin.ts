@@ -41,7 +41,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     };
 
     return reply.view('admin/index.ejs', {
-      title: 'Admin Dashboard - NorthStar',
+      title: 'Admin Dashboard - Waypoint',
       user: request.user,
       currentPath: '/admin',
       stats,
@@ -55,7 +55,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     const orgMap = new Map(organizations.map((org) => [org.id, org.name]));
 
     return reply.view('admin/personnel/index.ejs', {
-      title: 'Personnel Management - NorthStar',
+      title: 'Personnel Management - Waypoint',
       user: request.user,
       currentPath: '/admin/personnel',
       users,
@@ -71,7 +71,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     const users = getAllUsers();
     
     const timestamp = new Date().toISOString().split('T')[0];
-    const filename = `northstar-personnel-${timestamp}`;
+    const filename = `waypoint-personnel-${timestamp}`;
 
     if (format === 'json') {
       const json = exportPersonnelToJSON(users);
@@ -92,7 +92,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     const organizations = getAllOrganizations();
 
     return reply.view('admin/personnel/add.ejs', {
-      title: 'Add Personnel - NorthStar',
+      title: 'Add Personnel - Waypoint',
       user: request.user,
       currentPath: '/admin/personnel',
       organizations,
@@ -116,7 +116,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
 
     if (!name?.trim() || !email?.trim() || !orgId) {
       return reply.view('admin/personnel/add.ejs', {
-        title: 'Add Personnel - NorthStar',
+        title: 'Add Personnel - Waypoint',
         user: request.user,
         currentPath: '/admin/personnel',
         organizations,
@@ -138,7 +138,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to create personnel';
       return reply.view('admin/personnel/add.ejs', {
-        title: 'Add Personnel - NorthStar',
+        title: 'Add Personnel - Waypoint',
         user: request.user,
         currentPath: '/admin/personnel',
         organizations,
@@ -150,7 +150,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
   // Import Personnel Form
   server.get('/admin/personnel/import', async (request, reply) => {
     return reply.view('admin/personnel/import.ejs', {
-      title: 'Import Personnel - NorthStar',
+      title: 'Import Personnel - Waypoint',
       user: request.user,
       currentPath: '/admin/personnel',
       result: null,
@@ -169,7 +169,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
 
     if (!importData?.trim()) {
       return reply.view('admin/personnel/import.ejs', {
-        title: 'Import Personnel - NorthStar',
+        title: 'Import Personnel - Waypoint',
         user: request.user,
         currentPath: '/admin/personnel',
         result: null,
@@ -182,7 +182,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       const detected = detectFormat(importData);
       if (!detected) {
         return reply.view('admin/personnel/import.ejs', {
-          title: 'Import Personnel - NorthStar',
+          title: 'Import Personnel - Waypoint',
           user: request.user,
           currentPath: '/admin/personnel',
           result: null,
@@ -232,7 +232,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     }
 
     return reply.view('admin/personnel/import.ejs', {
-      title: 'Import Personnel - NorthStar',
+      title: 'Import Personnel - Waypoint',
       user: request.user,
       currentPath: '/admin/personnel',
       result: {
@@ -255,7 +255,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
 
     if (!targetUser) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'Personnel not found',
       });
@@ -264,7 +264,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     const organizations = getAllOrganizations();
 
     return reply.view('admin/personnel/edit.ejs', {
-      title: `Edit ${targetUser.name} - NorthStar`,
+      title: `Edit ${targetUser.name} - Waypoint`,
       user: request.user,
       currentPath: '/admin/personnel',
       targetUser,
@@ -291,7 +291,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     const targetUser = getUserById(id);
     if (!targetUser) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'Personnel not found',
       });
@@ -312,7 +312,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       const message = error instanceof Error ? error.message : 'Failed to update personnel';
 
       return reply.view('admin/personnel/edit.ejs', {
-        title: `Edit ${targetUser.name} - NorthStar`,
+        title: `Edit ${targetUser.name} - Waypoint`,
         user: request.user,
         currentPath: '/admin/personnel',
         targetUser,
@@ -347,7 +347,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
 
     if (!targetUser) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'Personnel not found',
       });
@@ -372,7 +372,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     const filteredGoals = orgId ? goals.filter((g) => g.orgId === orgId) : goals;
 
     return reply.view('admin/goals/index.ejs', {
-      title: 'Goals Management - NorthStar',
+      title: 'Goals Management - Waypoint',
       user: request.user,
       currentPath: '/admin/goals',
       goals: filteredGoals,
@@ -389,7 +389,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     const users = getAllUsers();
 
     return reply.view('admin/goals/edit.ejs', {
-      title: 'Create Goal - NorthStar',
+      title: 'Create Goal - Waypoint',
       user: request.user,
       currentPath: '/admin/goals',
       goal: null,
@@ -422,7 +422,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
 
     if (!title?.trim() || !orgId) {
       return reply.view('admin/goals/edit.ejs', {
-        title: 'Create Goal - NorthStar',
+        title: 'Create Goal - Waypoint',
         user: request.user,
         currentPath: '/admin/goals',
         goal: null,
@@ -456,7 +456,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to create goal';
       return reply.view('admin/goals/edit.ejs', {
-        title: 'Create Goal - NorthStar',
+        title: 'Create Goal - Waypoint',
         user: request.user,
         currentPath: '/admin/goals',
         goal: null,
@@ -479,7 +479,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
 
     if (!goal) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'Goal not found',
       });
@@ -489,7 +489,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     const users = getAllUsers();
 
     return reply.view('admin/goals/edit.ejs', {
-      title: `Edit Goal - NorthStar`,
+      title: `Edit Goal - Waypoint`,
       user: request.user,
       currentPath: '/admin/goals',
       goal,
@@ -519,7 +519,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     const goal = getGoalById(id);
     if (!goal) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'Goal not found',
       });
@@ -549,7 +549,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       const message = error instanceof Error ? error.message : 'Failed to update goal';
 
       return reply.view('admin/goals/edit.ejs', {
-        title: `Edit Goal - NorthStar`,
+        title: `Edit Goal - Waypoint`,
         user: request.user,
         currentPath: '/admin/goals',
         goal,

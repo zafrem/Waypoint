@@ -1,8 +1,8 @@
-# NorthStar Architecture
+# Waypoint Architecture
 
 ## Overview
 
-NorthStar is an MCP server that provides organizational goal context to AI assistants. It enables:
+Waypoint is an MCP server that provides organizational goal context to AI assistants. It enables:
 
 - **Goal Hierarchy**: Define company, department, and team-level goals with key results
 - **AI Guidelines**: Specify guidelines at each organizational level that inform AI recommendations
@@ -12,7 +12,7 @@ NorthStar is an MCP server that provides organizational goal context to AI assis
 ## Project Structure
 
 ```
-northstar/
+waypoint/
 ├── src/
 │   ├── index.ts                 # Entry point
 │   ├── config/                  # Configuration
@@ -131,7 +131,7 @@ northstar/
 
 ## MCP Resources
 
-### `northstar://context/current_user`
+### `waypoint://context/current_user`
 
 Returns the current user's context including:
 

@@ -23,7 +23,7 @@ function tryAutoLoadFromJson(): void {
   if (autoLoadAttempted || !db) return;
   autoLoadAttempted = true;
 
-  const jsonPath = resolve(process.cwd(), 'northstar-data.json');
+  const jsonPath = resolve(process.cwd(), 'waypoint-data.json');
   if (!existsSync(jsonPath)) return;
 
   // Check if database is empty
@@ -36,9 +36,9 @@ function tryAutoLoadFromJson(): void {
     const data = JSON.parse(content);
 
     importJsonData(db, data);
-    console.log('Loaded data from northstar-data.json');
+    console.log('Loaded data from waypoint-data.json');
   } catch (error) {
-    console.error('Failed to auto-load from northstar-data.json:', error);
+    console.error('Failed to auto-load from waypoint-data.json:', error);
   }
 }
 

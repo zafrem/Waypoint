@@ -39,14 +39,14 @@ export interface User {
   updatedAt: string;
 }
 
-<<<<<<< HEAD
 export type StandardType = 'document' | 'term' | 'ui_element' | 'template';
 
 export interface Standard {
   type: StandardType;
   name: string;
   content: string;
-=======
+}
+
 export interface Role {
   id: string;
   name: string;
@@ -58,7 +58,6 @@ export interface Role {
 export interface RolePermission {
   roleId: string;
   permission: string;
->>>>>>> b4f15bbe673f772589e450dea9576bdec92e75d2
 }
 
 export interface Goal {

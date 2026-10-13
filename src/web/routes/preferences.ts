@@ -7,7 +7,7 @@ export async function preferencesRoutes(server: FastifyInstance): Promise<void> 
     const preferences = getOrCreateUserPreferences(request.user!.id);
 
     return reply.view('preferences/index.ejs', {
-      title: 'User Preferences - NorthStar',
+      title: 'User Preferences - Waypoint',
       user: request.user,
       preferences,
     });

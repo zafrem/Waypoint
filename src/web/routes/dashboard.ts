@@ -58,7 +58,7 @@ export async function dashboardRoutes(server: FastifyInstance): Promise<void> {
     const orgTree = buildOrgTree(organizations, users, goals);
 
     return reply.view('dashboard.ejs', {
-      title: 'Dashboard - NorthStar',
+      title: 'Dashboard - Waypoint',
       user: request.user,
       currentPath: '/',
       stats: {

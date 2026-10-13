@@ -8,6 +8,6 @@ build/
 *.db-shm
 .git/
 .DS_Store
-northstar-data.json
+waypoint-data.json
 package-lock.json
 *.log

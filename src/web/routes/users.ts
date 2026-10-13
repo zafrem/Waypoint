@@ -15,7 +15,7 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
     const roleMap = new Map(roles.map((role) => [role.id, role.name]));
 
     return reply.view('users/index.ejs', {
-      title: 'Users - NorthStar',
+      title: 'Users - Waypoint',
       user: request.user,
       users,
       orgMap,
@@ -31,7 +31,7 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
 
     if (!targetUser) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'User not found',
       });
@@ -42,7 +42,7 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
     const role = targetUser.roleId ? getRoleById(targetUser.roleId) : null;
 
     return reply.view('users/view.ejs', {
-      title: `${targetUser.name} - NorthStar`,
+      title: `${targetUser.name} - Waypoint`,
       user: request.user,
       targetUser,
       organization,
@@ -59,7 +59,7 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
 
     if (!targetUser) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'User not found',
       });
@@ -69,7 +69,7 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
     const roles = getAllRoles();
 
     return reply.view('users/edit.ejs', {
-      title: `Edit ${targetUser.name} - NorthStar`,
+      title: `Edit ${targetUser.name} - Waypoint`,
       user: request.user,
       targetUser,
       organizations,
@@ -92,7 +92,7 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
     const targetUser = getUserById(id);
     if (!targetUser) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'User not found',
       });

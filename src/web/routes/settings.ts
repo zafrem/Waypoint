@@ -9,7 +9,7 @@ export async function settingsRoutes(server: FastifyInstance): Promise<void> {
     const config = getConfig();
 
     return reply.view('settings/index.ejs', {
-      title: 'App Settings - NorthStar',
+      title: 'App Settings - Waypoint',
       user: request.user,
       settings,
       config: {

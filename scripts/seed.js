@@ -3,7 +3,7 @@
 import { seedDatabase } from '../dist/db/seed.js';
 import { closeDb } from '../dist/db/index.js';
 
-console.log('Seeding NorthStar database...');
+console.log('Seeding Waypoint database...');
 
 try {
   seedDatabase();

@@ -5,9 +5,9 @@ import { existsSync } from 'fs';
 import { loadFromJsonFile } from '../dist/db/json-data.js';
 import { closeDb } from '../dist/db/index.js';
 
-const inputPath = resolve(process.cwd(), 'northstar-data.json');
+const inputPath = resolve(process.cwd(), 'waypoint-data.json');
 
-console.log('Importing NorthStar data from JSON...');
+console.log('Importing Waypoint data from JSON...');
 
 try {
   if (!existsSync(inputPath)) {

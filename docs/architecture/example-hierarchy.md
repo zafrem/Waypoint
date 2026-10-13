@@ -1,6 +1,6 @@
-# NorthStar Example Organization Hierarchy
+# Waypoint Example Organization Hierarchy
 
-This document provides a sample organizational structure with goals at each level, demonstrating how NorthStar cascades strategic alignment through the hierarchy.
+This document provides a sample organizational structure with goals at each level, demonstrating how Waypoint cascades strategic alignment through the hierarchy.
 
 ---
 

@@ -1,10 +1,10 @@
-# NorthStar MCP Sequence Diagrams
+# Waypoint MCP Sequence Diagrams
 
-This document contains sequence diagrams for the core MCP (Model Context Protocol) interaction flows in NorthStar. These diagrams illustrate how AI assistants interact with the NorthStar system to fetch organizational context, goals, and facilitate cross-organizational collaboration.
+This document contains sequence diagrams for the core MCP (Model Context Protocol) interaction flows in Waypoint. These diagrams illustrate how AI assistants interact with the Waypoint system to fetch organizational context, goals, and facilitate cross-organizational collaboration.
 
 ## Overview
 
-NorthStar exposes its functionality through MCP, enabling AI assistants to:
+Waypoint exposes its functionality through MCP, enabling AI assistants to:
 - Fetch user-specific context and guidelines at conversation start
 - Navigate organizational goal hierarchies
 - Search for collaborator goals across sibling organizations
@@ -13,20 +13,20 @@ NorthStar exposes its functionality through MCP, enabling AI assistants to:
 
 ---
 
-## 1. MCP Resource Request Flow (`northstar://context/current_user`)
+## 1. MCP Resource Request Flow (`waypoint://context/current_user`)
 
 This diagram shows how AI assistants fetch user context at the start of a conversation. The resource provides the AI with organizational context, current goals, and role-specific guidelines.
 
 ```mermaid
 sequenceDiagram
     participant AI as AI Client
-    participant MCP as NorthStar MCP Server
+    participant MCP as Waypoint MCP Server
     participant Auth as Auth/Session
     participant UserDB as User Table
     participant GoalDB as Goal Table
     participant OrgDB as Organization Table
 
-    AI->>MCP: Request northstar://context/current_user
+    AI->>MCP: Request waypoint://context/current_user
 
     MCP->>Auth: Identify requester (MCP session/auth token)
     Auth-->>MCP: userId, sessionContext
@@ -69,7 +69,7 @@ This diagram shows how an AI retrieves strategic context from a parent organizat
 ```mermaid
 sequenceDiagram
     participant AI as AI Client
-    participant MCP as NorthStar MCP Server
+    participant MCP as Waypoint MCP Server
     participant RBAC as RBAC Engine
     participant OrgDB as Organization Table
     participant GoalDB as Goal Table
@@ -117,7 +117,7 @@ This diagram shows lateral visibility - how an AI can search for goals across pe
 ```mermaid
 sequenceDiagram
     participant AI as AI Client
-    participant MCP as NorthStar MCP Server
+    participant MCP as Waypoint MCP Server
     participant RBAC as RBAC Engine
     participant UserDB as User Table
     participant OrgDB as Organization Table
@@ -164,7 +164,7 @@ This diagram shows how an AI can draft and submit a formal question to a goal ow
 ```mermaid
 sequenceDiagram
     participant AI as AI Client
-    participant MCP as NorthStar MCP Server
+    participant MCP as Waypoint MCP Server
     participant RBAC as RBAC Engine
     participant GoalDB as Goal Table
     participant CommentDB as Comment Table
@@ -281,7 +281,7 @@ sequenceDiagram
 ## Integration Notes
 
 ### MCP Session Authentication
-All requests include session context that identifies the requesting user. The NorthStar MCP server extracts the `userId` from the authenticated session before processing any request.
+All requests include session context that identifies the requesting user. The Waypoint MCP server extracts the `userId` from the authenticated session before processing any request.
 
 ### Error Handling
 All tools return structured error responses when:

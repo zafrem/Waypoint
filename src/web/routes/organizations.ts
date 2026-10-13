@@ -12,7 +12,7 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
     const organizations = getAllOrganizations();
 
     return reply.view('organizations/index.ejs', {
-      title: 'Organizations - NorthStar',
+      title: 'Organizations - Waypoint',
       user: request.user,
       organizations,
     });
@@ -26,7 +26,7 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
 
     if (!organization) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'Organization not found',
       });
@@ -36,7 +36,7 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
     const goals = getGoalsByOrgId(id);
 
     return reply.view('organizations/view.ejs', {
-      title: `${organization.name} - NorthStar`,
+      title: `${organization.name} - Waypoint`,
       user: request.user,
       organization,
       users,
@@ -52,14 +52,14 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
 
     if (!organization) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'Organization not found',
       });
     }
 
     return reply.view('organizations/edit.ejs', {
-      title: `Edit ${organization.name} - NorthStar`,
+      title: `Edit ${organization.name} - Waypoint`,
       user: request.user,
       organization,
     });
@@ -79,7 +79,7 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
     const organization = getOrganizationById(id);
     if (!organization) {
       return reply.status(404).view('layouts/error.ejs', {
-        title: 'Not Found - NorthStar',
+        title: 'Not Found - Waypoint',
         user: request.user,
         message: 'Organization not found',
       });
