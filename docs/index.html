@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Waypoint</title>
 <meta name="description" content="Define your organization's goals hierarchically and inject them into AI assistants through MCP, so individual work stays aligned with the organization's direction.">
-<link rel="icon" href="images/Logo.png">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{--bg:#f8fafc;--surface:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--primary:#2563eb;--code:#0f172a;--code-text:#e2e8f0}
 @media (prefers-color-scheme:dark){:root{--bg:#0f172a;--surface:#1e293b;--text:#f1f5f9;--muted:#94a3b8;--border:#334155;--primary:#60a5fa;--code:#020617}}
@@ -34,6 +36,13 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .ex{margin:0 0 16px}
 .ex .q{font-style:italic;margin:0 0 4px}
 .ex .a{margin:0;color:var(--muted)}
+.compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px}
+.compare .card h3{margin-bottom:2px}
+.compare .who{font-size:.85rem;color:var(--muted);margin:0 0 10px}
+.compare ul{margin:0 0 12px;padding-left:18px}
+.compare li{margin:4px 0}
+.compare .why{font-size:.85rem;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;margin:0}
+.ask{font-size:1.1rem;font-weight:600;margin:12px 0 0}
 blockquote{margin:0;padding:12px 16px;border-left:4px solid var(--primary);color:var(--muted);background:var(--surface);border-radius:0 8px 8px 0}
 footer{padding:32px 0 48px;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
 a{color:var(--primary)}
@@ -111,6 +120,55 @@ a{color:var(--primary)}
         <p class="note">Excerpt of the real <code>waypoint://context/current_user</code> output for <code>user-jane-smith</code>.</p>
       </div>
     </div>
+  </section>
+
+  <section id="compare">
+    <h2>Same question, different answers</h2>
+    <p>Ask three people at the same company the same thing. Without shared context, their assistants give the same generic answer. With Waypoint, each answer reflects that person's own goals and guidelines, and all of them stay inside the company's.</p>
+    <p class="ask">"We're launching a new reporting dashboard next month. What should our plan be?"</p>
+    <div class="compare">
+      <div class="card">
+        <h3>Without Waypoint</h3>
+        <p class="who">Anyone</p>
+        <ul>
+          <li>Define scope and build an MVP</li>
+          <li>Test it, then launch</li>
+          <li>Collect feedback and iterate</li>
+        </ul>
+        <p class="why">Reasonable, but it could be about any company and any team.</p>
+      </div>
+      <div class="card">
+        <h3>Platform Team lead</h3>
+        <p class="who">Mike Williams · Acme Corp → Engineering → Platform</p>
+        <ul>
+          <li>Provision the infrastructure as code (Terraform) on managed services</li>
+          <li>Plan for multi-region availability and a cost estimate</li>
+          <li>Set up monitoring and alerts before launch, and keep existing APIs backward compatible</li>
+        </ul>
+        <p class="why">Shaped by: <em>Infrastructure as Code</em> goal (100% IaC); guidelines "default to managed services", "consider multi-region availability", "always consider monitoring and observability".</p>
+      </div>
+      <div class="card">
+        <h3>Product Team lead</h3>
+        <p class="who">David Lee · Acme Corp → Engineering → Product</p>
+        <ul>
+          <li>Ship behind a feature flag and roll out gradually</li>
+          <li>Keep web and mobile in step</li>
+          <li>Define the user-facing success metric up front, and fit the work into the weekly release cadence</li>
+        </ul>
+        <p class="why">Shaped by: <em>Feature Velocity</em> and <em>Code Quality</em> goals; guidelines "suggest feature flags for gradual rollouts", "consider mobile and web parity", "focus on user-facing impact".</p>
+      </div>
+      <div class="card">
+        <h3>Enterprise Sales lead</h3>
+        <p class="who">Amanda White · Acme Corp → Sales → Enterprise Sales</p>
+        <ul>
+          <li>Position it as a reason for strategic accounts to sign multi-year deals</li>
+          <li>Map it to the executive priorities of target Fortune 500 customers</li>
+          <li>Prepare security and procurement material before the first enterprise demo</li>
+        </ul>
+        <p class="why">Shaped by: <em>Strategic Accounts</em> and <em>Expansion Revenue</em> goals; guidelines "map to executive priorities", "consider procurement and security requirements".</p>
+      </div>
+    </div>
+    <p class="note">Illustrative: the answers are written by hand to show how the context steers a response, not captured from a model. The goals and guidelines are the real sample data from <code>npm run seed</code>. Every user also receives the company-wide guidelines, such as "always prioritize customer impact" and "maintain security and compliance".</p>
   </section>
 
   <section>
