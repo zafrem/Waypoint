@@ -23,16 +23,13 @@
         <small class="form-help">These guidelines will be provided to AI assistants to help them understand how to work with this organization.</small>
       </div>
 
-
-      ${user && user.isAdmin ? `
       <div class="form-group">
         <label>
           <input type="checkbox" name="mcpDisabled" value="1" ${organization.mcpDisabled ? 'checked' : ''}>
           Disable MCP access for this organization
         </label>
-        <small class="form-help">When checked, AI assistants for every user in this organization and its sub-organizations receive no Waypoint context and cannot use any Waypoint tools. Web login is not affected. Only admins see this option.</small>
+        <small class="form-help">When checked, AI assistants for every user in this organization and its sub-organizations receive no Waypoint context and cannot use any Waypoint tools. Web login is not affected.</small>
       </div>
-      ` : ''}
 
       <div class="form-actions">
         <button type="submit" class="btn btn-primary">Save Changes</button>

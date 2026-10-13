@@ -2,7 +2,7 @@
 <div class="page-header">
   <div class="page-header-content">
     <h1>${organization.name}</h1>
-    <a href="/organizations/${organization.id}/edit" class="btn btn-primary">Edit Organization</a>
+    ${user && user.isAdmin ? `<a href="/organizations/${organization.id}/edit" class="btn btn-primary">Edit Organization</a>` : ''}
   </div>
   <p class="page-subtitle">${organization.description || 'No description'}</p>
 </div>

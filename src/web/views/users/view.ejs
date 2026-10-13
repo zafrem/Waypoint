@@ -2,7 +2,7 @@
 <div class="page-header">
   <div class="page-header-content">
     <h1>${targetUser.name}</h1>
-    <a href="/users/${targetUser.id}/edit" class="btn btn-primary">Edit User</a>
+    ${user && user.isAdmin ? `<a href="/users/${targetUser.id}/edit" class="btn btn-primary">Edit User</a>` : ''}
   </div>
   <p class="page-subtitle">${targetUser.email}</p>
 </div>

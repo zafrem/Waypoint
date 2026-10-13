@@ -7,6 +7,7 @@ import {
 import { getUsersByOrgId } from '../../models/user.js';
 import { getGoalsByOrgId } from '../../models/goal.js';
 import { getOrganizationMcpStatus } from '../../services/mcpAccess.js';
+import { adminMiddleware } from '../middleware/admin.js';
 
 export async function organizationsRoutes(server: FastifyInstance): Promise<void> {
   server.get('/organizations', async (request, reply) => {
@@ -51,7 +52,7 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
 
   server.get<{
     Params: { id: string };
-  }>('/organizations/:id/edit', async (request, reply) => {
+  }>('/organizations/:id/edit', { preHandler: adminMiddleware }, async (request, reply) => {
     const { id } = request.params;
     const organization = getOrganizationById(id);
 
@@ -78,7 +79,7 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
       aiGuidelines?: string;
       mcpDisabled?: string;
     };
-  }>('/organizations/:id', async (request, reply) => {
+  }>('/organizations/:id', { preHandler: adminMiddleware }, async (request, reply) => {
     const { id } = request.params;
     const { name, description, aiGuidelines, mcpDisabled } = request.body;
 
@@ -95,8 +96,7 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
       name: name?.trim() || undefined,
       description: description?.trim() || undefined,
       aiGuidelines: aiGuidelines?.trim() || undefined,
-      // Only admins may change MCP access; ignore the field for everyone else.
-      mcpDisabled: request.user?.isAdmin ? mcpDisabled === '1' : undefined,
+      mcpDisabled: mcpDisabled === '1',
     });
 
     return reply.redirect(`/organizations/${id}?success=Organization updated`);

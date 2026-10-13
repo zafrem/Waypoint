@@ -26,7 +26,7 @@
           <td><span class="badge">${roleMap.get(u.roleId) || 'No Role'}</span></td>
           <td>
             <a href="/users/${u.id}" class="btn btn-sm btn-secondary">View</a>
-            <a href="/users/${u.id}/edit" class="btn btn-sm btn-primary">Edit</a>
+            ${user && user.isAdmin ? `<a href="/users/${u.id}/edit" class="btn btn-sm btn-primary">Edit</a>` : ''}
           </td>
         </tr>
         `).join('')}

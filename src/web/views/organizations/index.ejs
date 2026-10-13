@@ -24,7 +24,7 @@
           <td>${new Date(org.createdAt).toLocaleDateString()}</td>
           <td>
             <a href="/organizations/${org.id}" class="btn btn-sm btn-secondary">View</a>
-            <a href="/organizations/${org.id}/edit" class="btn btn-sm btn-primary">Edit</a>
+            ${user && user.isAdmin ? `<a href="/organizations/${org.id}/edit" class="btn btn-sm btn-primary">Edit</a>` : ''}
           </td>
         </tr>
         `).join('')}
