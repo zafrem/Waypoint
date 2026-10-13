@@ -1,7 +1,7 @@
 import { UserContext, Organization, Goal } from '../models/types.js';
 import { getUserById } from '../models/user.js';
 import { getOrganizationById, getOrganizationPath } from '../models/organization.js';
-import { getGoalsByOrgId, getGoalsByOrgIds } from '../models/goal.js';
+import { getGoalsByOrgId, getGoalsByOrgIds, parseStandards } from '../models/goal.js';
 
 /**
  * Build a complete user context for the MCP resource.
@@ -142,6 +142,14 @@ function formatGoal(goal: Goal, orgName: string): string {
       }
     } catch {
       // Ignore JSON parse errors
+    }
+  }
+
+  const standards = parseStandards(goal.standards);
+  if (standards.length > 0) {
+    lines.push(`  - Standards:`);
+    for (const s of standards) {
+      lines.push(`    - [${s.type}] **${s.name}**${s.content ? `: ${s.content}` : ''}`);
     }
   }
 

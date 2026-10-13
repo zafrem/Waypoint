@@ -69,11 +69,11 @@ function importJsonData(database: Database.Database, data: any): void {
     }
 
     const insertGoal = database.prepare(`
-      INSERT INTO goals (id, org_id, owner_id, title, description, key_results, status, progress, visibility, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO goals (id, org_id, owner_id, title, description, key_results, standards, status, progress, visibility, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     for (const goal of data.data.goals) {
-      insertGoal.run(goal.id, goal.orgId, goal.ownerId, goal.title, goal.description, goal.keyResults, goal.status, goal.progress, goal.visibility, goal.createdAt, goal.updatedAt);
+      insertGoal.run(goal.id, goal.orgId, goal.ownerId, goal.title, goal.description, goal.keyResults, goal.standards ?? null, goal.status, goal.progress, goal.visibility, goal.createdAt, goal.updatedAt);
     }
 
     const insertComment = database.prepare(`
@@ -125,6 +125,12 @@ function sortOrgsByHierarchy(orgs: any[]): any[] {
 function initializeSchema(): void {
   if (!db) return;
   db.exec(schema);
+
+  // Schema has no migrations: add columns introduced after a db was first created.
+  const goalColumns = db.prepare('PRAGMA table_info(goals)').all() as { name: string }[];
+  if (!goalColumns.some((c) => c.name === 'standards')) {
+    db.exec('ALTER TABLE goals ADD COLUMN standards TEXT');
+  }
 }
 
 export function closeDb(): void {

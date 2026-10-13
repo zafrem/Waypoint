@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS goals (
   title TEXT NOT NULL,
   description TEXT,
   key_results TEXT,
+  standards TEXT,
   status TEXT NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'completed', 'cancelled')),
   progress INTEGER NOT NULL DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
   visibility TEXT NOT NULL DEFAULT 'public' CHECK (visibility IN ('public', 'private', 'team_only')),

@@ -89,6 +89,12 @@ ${error ? `<div class="alert alert-error">${error}</div>` : ''}
         <span class="form-help">Enter each key result on a separate line</span>
       </div>
 
+      <div class="form-group">
+        <label for="standards">Standards</label>
+        <textarea id="standards" name="standards" rows="5" placeholder="template | PR template | Summary, test plan, risks">${goal && goal.standards ? JSON.parse(goal.standards).map(s => s.type + ' | ' + s.name + ' | ' + s.content).join('\n') : ''}</textarea>
+        <span class="form-help">One per line: <code>type | name | content</code>, where type is document, term, ui_element or template. Child teams inherit these.</span>
+      </div>
+
       <div class="form-actions">
         <button type="submit" class="btn btn-primary">${goal ? 'Update Goal' : 'Create Goal'}</button>
         <a href="/admin/goals" class="btn btn-secondary">Cancel</a>

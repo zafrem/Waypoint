@@ -17,6 +17,7 @@ import {
   createGoal,
   updateGoal,
   deleteGoal,
+  parseStandardsText,
 } from '../../models/goal.js';
 import { parseCSV, parseJSON, detectFormat, ImportResult } from '../services/personnelImport.js';
 import { exportPersonnelToCSV, exportPersonnelToJSON } from '../services/personnelExport.js';
@@ -410,9 +411,10 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       progress?: string;
       visibility?: string;
       keyResults?: string;
+      standards?: string;
     };
   }>('/admin/goals', async (request, reply) => {
-    const { title, description, orgId, ownerId, status, progress, visibility, keyResults } =
+    const { title, description, orgId, ownerId, status, progress, visibility, keyResults, standards } =
       request.body;
 
     const organizations = getAllOrganizations();
@@ -436,6 +438,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         ?.split('\n')
         .map((kr) => kr.trim())
         .filter((kr) => kr.length > 0);
+      const standardsArray = parseStandardsText(standards);
 
       const newGoal = createGoal({
         title: title.trim(),
@@ -446,6 +449,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         progress: parseInt(progress || '0', 10),
         visibility: (visibility as 'public' | 'private' | 'team_only') || 'public',
         keyResults: keyResultsArray?.length ? keyResultsArray : null,
+        standards: standardsArray,
       });
 
       return reply.redirect(`/admin/goals/${newGoal.id}/edit?success=Goal created successfully`);
@@ -506,10 +510,11 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       progress?: string;
       visibility?: string;
       keyResults?: string;
+      standards?: string;
     };
   }>('/admin/goals/:id', async (request, reply) => {
     const { id } = request.params;
-    const { title, description, status, progress, visibility, keyResults } = request.body;
+    const { title, description, status, progress, visibility, keyResults, standards } = request.body;
 
     const goal = getGoalById(id);
     if (!goal) {
@@ -525,6 +530,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         ?.split('\n')
         .map((kr) => kr.trim())
         .filter((kr) => kr.length > 0);
+      const standardsArray = parseStandardsText(standards);
 
       updateGoal(id, {
         title: title?.trim() || undefined,
@@ -533,6 +539,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         progress: progress !== undefined ? parseInt(progress, 10) : undefined,
         visibility: visibility as 'public' | 'private' | 'team_only',
         keyResults: keyResultsArray?.length ? keyResultsArray : null,
+        standards: standardsArray,
       });
 
       return reply.redirect(`/admin/goals/${id}/edit?success=Goal updated successfully`);

@@ -38,6 +38,14 @@ export interface User {
   updatedAt: string;
 }
 
+export type StandardType = 'document' | 'term' | 'ui_element' | 'template';
+
+export interface Standard {
+  type: StandardType;
+  name: string;
+  content: string;
+}
+
 export interface Goal {
   id: string;
   orgId: string;
@@ -45,6 +53,7 @@ export interface Goal {
   title: string;
   description: string | null;
   keyResults: string | null; // JSON string of key results
+  standards: string | null; // JSON string of Standard[]
   status: GoalStatus;
   progress: number;
   visibility: GoalVisibility;
@@ -122,6 +131,7 @@ export interface GoalRow {
   title: string;
   description: string | null;
   key_results: string | null;
+  standards: string | null;
   status: GoalStatus;
   progress: number;
   visibility: GoalVisibility;
@@ -204,6 +214,7 @@ export function toGoal(row: GoalRow): Goal {
     title: row.title,
     description: row.description,
     keyResults: row.key_results,
+    standards: row.standards,
     status: row.status,
     progress: row.progress,
     visibility: row.visibility,

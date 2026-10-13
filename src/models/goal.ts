@@ -1,5 +1,5 @@
 import { getDb } from '../db/index.js';
-import { Goal, GoalRow, GoalStatus, GoalVisibility, toGoal } from './types.js';
+import { Goal, GoalRow, GoalStatus, GoalVisibility, Standard, StandardType, toGoal } from './types.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface CreateGoalInput {
@@ -9,6 +9,7 @@ export interface CreateGoalInput {
   title: string;
   description?: string | null;
   keyResults?: string[] | null;
+  standards?: Standard[] | null;
   status?: GoalStatus;
   progress?: number;
   visibility?: GoalVisibility;
@@ -18,6 +19,7 @@ export interface UpdateGoalInput {
   title?: string;
   description?: string | null;
   keyResults?: string[] | null;
+  standards?: Standard[] | null;
   status?: GoalStatus;
   progress?: number;
   visibility?: GoalVisibility;
@@ -29,8 +31,8 @@ export function createGoal(input: CreateGoalInput): Goal {
   const now = new Date().toISOString();
 
   const stmt = db.prepare(`
-    INSERT INTO goals (id, org_id, owner_id, title, description, key_results, status, progress, visibility, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO goals (id, org_id, owner_id, title, description, key_results, standards, status, progress, visibility, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   stmt.run(
@@ -40,6 +42,7 @@ export function createGoal(input: CreateGoalInput): Goal {
     input.title,
     input.description ?? null,
     input.keyResults ? JSON.stringify(input.keyResults) : null,
+    input.standards?.length ? JSON.stringify(input.standards) : null,
     input.status ?? 'not_started',
     input.progress ?? 0,
     input.visibility ?? 'public',
@@ -146,6 +149,10 @@ export function updateGoal(id: string, input: UpdateGoalInput): Goal | null {
     updates.push('key_results = ?');
     values.push(input.keyResults ? JSON.stringify(input.keyResults) : null);
   }
+  if (input.standards !== undefined) {
+    updates.push('standards = ?');
+    values.push(input.standards?.length ? JSON.stringify(input.standards) : null);
+  }
   if (input.status !== undefined) {
     updates.push('status = ?');
     values.push(input.status);
@@ -176,4 +183,33 @@ export function deleteGoal(id: string): boolean {
   const stmt = db.prepare('DELETE FROM goals WHERE id = ?');
   const result = stmt.run(id);
   return result.changes > 0;
+}
+
+export const STANDARD_TYPES: StandardType[] = ['document', 'term', 'ui_element', 'template'];
+
+export function parseStandards(json: string | null): Standard[] {
+  if (!json) return [];
+  try {
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+/** One standard per line: `type | name | content`. Throws on an unknown type or missing name. */
+export function parseStandardsText(text: string | undefined): Standard[] {
+  const standards: Standard[] = [];
+  for (const line of (text ?? '').split('\n')) {
+    if (!line.trim()) continue;
+    const [type, name, ...rest] = line.split('|').map((part) => part.trim());
+    if (!STANDARD_TYPES.includes(type as StandardType)) {
+      throw new Error(`Unknown standard type "${type}" (use ${STANDARD_TYPES.join(', ')}).`);
+    }
+    if (!name) {
+      throw new Error(`Standard "${line.trim()}" is missing a name.`);
+    }
+    standards.push({ type: type as StandardType, name, content: rest.join('|').trim() });
+  }
+  return standards;
 }

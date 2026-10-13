@@ -122,8 +122,8 @@ export function importFromJson(data: JsonExport, options?: ImportOptions): void 
 
     // Import goals
     const insertGoal = db.prepare(`
-      INSERT INTO goals (id, org_id, owner_id, title, description, key_results, status, progress, visibility, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO goals (id, org_id, owner_id, title, description, key_results, standards, status, progress, visibility, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     for (const goal of data.data.goals) {
       const now = new Date().toISOString();
@@ -134,6 +134,7 @@ export function importFromJson(data: JsonExport, options?: ImportOptions): void 
         goal.title,
         goal.description,
         goal.keyResults,
+        goal.standards ?? null,
         goal.status,
         goal.progress,
         goal.visibility,

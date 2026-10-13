@@ -158,3 +158,6 @@ northstar-data.json
 # General Build Output
 dist/
 build/
+
+# Claude Code
+CLAUDE.md
