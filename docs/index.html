@@ -12,6 +12,18 @@
 :root{--bg:#f8fafc;--surface:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--primary:#2563eb;--code:#0f172a;--code-text:#e2e8f0}
 @media (prefers-color-scheme:dark){:root{--bg:#0f172a;--surface:#1e293b;--text:#f1f5f9;--muted:#94a3b8;--border:#334155;--primary:#60a5fa;--code:#020617}}
 *{box-sizing:border-box}
+html{scroll-padding-top:72px}
+.topbar{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--border)}
+.topbar .bar{max-width:960px;margin:0 auto;padding:0 16px;height:56px;display:flex;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:8px;color:var(--text);text-decoration:none;font-weight:700;font-size:1.1rem}
+.brand img{width:28px;height:28px;border-radius:6px;display:block}
+.topbar nav{display:flex;gap:4px;margin-left:8px;flex:1}
+.topbar nav a{color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:6px;font-size:.95rem}
+.topbar nav a:hover,.topbar nav a:focus-visible{color:var(--text);background:var(--bg)}
+.topbar .coffee{display:block;line-height:0;margin-left:auto}
+.topbar .coffee img{height:28px;width:auto;display:block}
+@media (max-width:720px){.topbar nav a:not(.gh){display:none}.topbar nav{margin-left:0}}
+@media (max-width:420px){.topbar nav{display:none}.topbar .bar{gap:8px}}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 .wrap{max-width:960px;margin:0 auto;padding:0 16px}
 header.hero{text-align:center;padding:64px 0 40px}
@@ -70,7 +82,20 @@ footer{padding:32px 0 48px;text-align:center;color:var(--muted);border-top:1px s
 a{color:var(--primary)}
 </style>
 </head>
-<body>
+<body id="top">
+<div class="topbar">
+  <div class="bar">
+    <a class="brand" href="#top"><img src="favicon-32.png" alt="" width="28" height="28">Waypoint</a>
+    <nav aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#compare">Examples</a>
+      <a href="#screenshots">Screenshots</a>
+      <a href="#start">Get started</a>
+      <a class="gh" href="https://github.com/zafrem/Waypoint">GitHub</a>
+    </nav>
+    <a class="coffee" href="https://buymeacoffee.com/zafrem" aria-label="Buy Me a Coffee"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&amp;logo=buy-me-a-coffee&amp;logoColor=black" alt="Buy Me A Coffee"></a>
+  </div>
+</div>
 <div class="wrap">
   <header class="hero">
     <img src="images/Logo.png" alt="Waypoint logo">
@@ -84,7 +109,7 @@ a{color:var(--primary)}
     <blockquote>The same request yields very different results depending on who's asking and what context they have. Shared organizational goals should be part of that context.</blockquote>
   </section>
 
-  <section>
+  <section id="features">
     <h2>What it does</h2>
     <div class="grid">
       <div class="card"><h3>Hierarchical goals</h3><p>Model goals from the company down to each team, with parent goals cascading as context.</p></div>
