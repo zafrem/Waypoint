@@ -130,7 +130,16 @@ export function updateUser(id: string, input: UpdateUserInput): User | null {
 
 export function deleteUser(id: string): boolean {
   const db = getDb();
-  const stmt = db.prepare('DELETE FROM users WHERE id = ?');
-  const result = stmt.run(id);
-  return result.changes > 0;
+  const tx = db.transaction(() => {
+    db.prepare('DELETE FROM web_sessions WHERE user_id = ?').run(id);
+    db.prepare('DELETE FROM user_preferences WHERE user_id = ?').run(id);
+    db.prepare('UPDATE gray_areas SET resolved_by = NULL WHERE resolved_by = ?').run(id);
+    db.prepare('UPDATE gray_areas SET plan_user_id = NULL WHERE plan_user_id = ?').run(id);
+    db.prepare('DELETE FROM gray_areas WHERE author_id = ?').run(id);
+    db.prepare('DELETE FROM goal_participants WHERE user_id = ?').run(id);
+    db.prepare('DELETE FROM comments WHERE author_id = ?').run(id);
+    db.prepare('UPDATE goals SET owner_id = NULL WHERE owner_id = ?').run(id);
+    return db.prepare('DELETE FROM users WHERE id = ?').run(id).changes > 0;
+  });
+  return tx();
 }

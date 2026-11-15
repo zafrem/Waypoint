@@ -13,7 +13,7 @@
 
 <div class="card">
   <div class="card-header">
-    <h2>Filter by Organization</h2>
+    <h2>Filter</h2>
   </div>
   <div class="card-body">
     <form action="/admin/goals" method="GET">
@@ -23,6 +23,15 @@
             <option value="">All Organizations</option>
             ${organizations.map(org => `
               <option value="${org.id}" ${org.id === selectedOrgId ? 'selected' : ''}>${org.name}</option>
+            `).join('')}
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <select name="period" onchange="this.form.submit()">
+            <option value="">All periods</option>
+            <option value="none" ${selectedPeriod === 'none' ? 'selected' : ''}>Ongoing (no period)</option>
+            ${periods.map(p => `
+              <option value="${p}" ${p === selectedPeriod ? 'selected' : ''}>${p}</option>
             `).join('')}
           </select>
         </div>
@@ -38,6 +47,7 @@
       <thead>
         <tr>
           <th>Title</th>
+          <th>Period</th>
           <th>Organization</th>
           <th>Owner</th>
           <th>Status</th>
@@ -48,11 +58,15 @@
       <tbody>
         ${goals.map(g => `
         <tr>
-          <td>${g.title}</td>
-          <td><a href="/organizations/${g.orgId}">${orgMap.get(g.orgId) || 'Unknown'}</a></td>
-          <td>${g.ownerId ? (userMap.get(g.ownerId) || 'Unknown') : '-'}</td>
           <td>
-            <span class="badge ${g.status === 'completed' ? 'badge-success' : g.status === 'in_progress' ? 'badge-warning' : ''}">${g.status.replace('_', ' ')}</span>
+            <a href="/goals/${g.id}">${esc(g.title)}</a>
+            ${g.parentGoalId && goalById.get(g.parentGoalId) ? `<br><small class="text-muted">supports: ${esc(goalById.get(g.parentGoalId).title)}</small>` : ''}
+          </td>
+          <td>${esc(periodLabel(g) || '-')}</td>
+          <td><a href="/organizations/${g.orgId}">${esc(orgMap.get(g.orgId) || 'Unknown')}</a></td>
+          <td>${g.ownerId ? esc(userMap.get(g.ownerId) || 'Unknown') : '-'}</td>
+          <td>
+            <span class="badge ${g.status === 'completed' ? 'badge-success' : g.status === 'in_progress' ? 'badge-warning' : ''}">${esc(g.status.replace('_', ' '))}</span>
           </td>
           <td>
             <div class="progress-bar" style="width: 100px;">

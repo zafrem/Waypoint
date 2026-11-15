@@ -4,8 +4,8 @@
   <p class="page-subtitle">Update user information</p>
 </div>
 
-${success ? `<div class="alert alert-success">${success}</div>` : ''}
-${error ? `<div class="alert alert-error">${error}</div>` : ''}
+${success ? `<div class="alert alert-success">${esc(success)}</div>` : ''}
+${error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
 
 <div class="card">
   <div class="card-body">
@@ -13,23 +13,23 @@ ${error ? `<div class="alert alert-error">${error}</div>` : ''}
       <div class="form-row">
         <div class="form-group">
           <label for="name">Name *</label>
-          <input type="text" id="name" name="name" value="${targetUser.name}" required>
+          <input type="text" id="name" name="name" value="${esc(targetUser.name)}" required>
         </div>
         <div class="form-group">
           <label for="email">Email *</label>
-          <input type="email" id="email" name="email" value="${targetUser.email}" required>
+          <input type="email" id="email" name="email" value="${esc(targetUser.email)}" required>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label>Organization</label>
-          <p class="form-static">${organizations.find(o => o.id === '${targetUser.orgId}')?.name || 'Unknown'}</p>
+          <p class="form-static">${esc(organizations.find(o => o.id === targetUser.orgId)?.name || 'Unknown')}</p>
           <span class="form-help">Organization cannot be changed after creation</span>
         </div>
         <div class="form-group">
           <label for="jobFunction">Job Function</label>
-          <input type="text" id="jobFunction" name="jobFunction" value="${targetUser.jobFunction || ''}">
+          <input type="text" id="jobFunction" name="jobFunction" value="${esc(targetUser.jobFunction || '')}">
         </div>
       </div>
 

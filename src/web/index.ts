@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getConfig } from '../config/index.js';
 import { registerRoutes } from './routes/index.js';
+import { esc } from './services/escape.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,7 +17,9 @@ export async function createWebServer(): Promise<FastifyInstance> {
   const config = getConfig();
 
   const server = Fastify({
-    logger: true,
+    logger: {
+      stream: process.stderr,
+    },
   });
 
   // Register plugins
@@ -41,6 +44,7 @@ export async function createWebServer(): Promise<FastifyInstance> {
     root: viewsPath,
     defaultContext: {
       title: 'Waypoint',
+      esc,
     },
   });
 
@@ -54,14 +58,14 @@ export async function startWebServer(): Promise<void> {
   const config = getConfig();
 
   if (!config.webEnabled) {
-    console.log('Web UI is disabled');
+    console.error('Web UI is disabled');
     return;
   }
 
   try {
     const server = await createWebServer();
     await server.listen({ port: config.webPort, host: '0.0.0.0' });
-    console.log(`Web UI available at http://localhost:${config.webPort}`);
+    console.error(`Web UI available at http://localhost:${config.webPort}`);
   } catch (error) {
     console.error('Failed to start web server:', error);
     throw error;

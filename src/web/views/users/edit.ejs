@@ -1,25 +1,27 @@
 <%- include('../layouts/main', { body: `
 <div class="page-header">
   <h1>Edit User</h1>
-  <p class="page-subtitle">Update ${targetUser.name}</p>
+  <p class="page-subtitle">Update ${esc(targetUser.name)}</p>
 </div>
+
+${typeof error !== 'undefined' && error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
 
 <div class="card">
   <div class="card-body">
     <form action="/users/${targetUser.id}" method="POST" class="form">
       <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" id="name" name="name" value="${targetUser.name}" required>
+        <input type="text" id="name" name="name" value="${esc(targetUser.name)}" required>
       </div>
 
       <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" id="email" name="email" value="${targetUser.email}" required>
+        <input type="email" id="email" name="email" value="${esc(targetUser.email)}" required>
       </div>
 
       <div class="form-group">
         <label for="jobFunction">Job Function</label>
-        <input type="text" id="jobFunction" name="jobFunction" value="${targetUser.jobFunction || ''}" placeholder="e.g., Software Engineer, Product Manager">
+        <input type="text" id="jobFunction" name="jobFunction" value="${esc(targetUser.jobFunction || '')}" placeholder="e.g., Software Engineer, Product Manager">
       </div>
 
       <div class="form-group">
@@ -27,7 +29,7 @@
         <select id="roleId" name="roleId">
           <option value="">-- No Role --</option>
           ${roles.map(r => `
-            <option value="${r.id}" ${targetUser.roleId === r.id ? 'selected' : ''}>${r.name} - ${r.description}</option>
+            <option value="${esc(r.id)}" ${targetUser.roleId === r.id ? 'selected' : ''}>${esc(r.name)} - ${esc(r.description)}</option>
           `).join('')}
         </select>
         <small class="form-help">System roles determine access level to organizational context and AI tools.</small>
@@ -35,7 +37,7 @@
 
       <div class="form-group">
         <label>Organization</label>
-        <p class="form-static">${organizations.find(o => o.id === targetUser.orgId)?.name || 'Unknown'}</p>
+        <p class="form-static">${esc(organizations.find(o => o.id === targetUser.orgId)?.name || 'Unknown')}</p>
         <small class="form-help">Organization cannot be changed from this interface.</small>
       </div>
 

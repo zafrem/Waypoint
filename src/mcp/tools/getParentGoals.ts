@@ -1,11 +1,18 @@
 import { z } from 'zod';
 import { isConfiguredUserMcpDisabled } from '../../services/mcpAccess.js';
+import { canViewGoal } from '../../services/planAccess.js';
+import { getConfig } from '../../config/index.js';
+import { getUserById } from '../../models/user.js';
 import { getOrganizationById, getOrganizationPath } from '../../models/organization.js';
-import { getGoalsByOrgIds } from '../../models/goal.js';
+import { filterCurrentGoals, getGoalsByOrgIds, periodLabel } from '../../models/goal.js';
 import { Goal, Organization } from '../../models/types.js';
 
 export const getParentGoalsSchema = z.object({
   org_id: z.string().describe('The organization ID to get parent goals for'),
+  include_past_periods: z
+    .boolean()
+    .optional()
+    .describe('Also include goals from other years/quarters (default: current period only)'),
 });
 
 export type GetParentGoalsInput = z.infer<typeof getParentGoalsSchema>;
@@ -22,6 +29,8 @@ export interface ParentGoalResult {
     keyResults: string[];
     status: string;
     progress: number;
+    period: string | null;
+    supportsGoalId: string | null;
   }>;
 }
 
@@ -62,8 +71,11 @@ export function getParentGoals(input: GetParentGoalsInput): GetParentGoalsResult
   }
 
   // Get goals for all parent organizations
+  const config = getConfig();
+  const user = config.userId ? getUserById(config.userId) : null;
   const parentOrgIds = parentOrgs.map((o) => o.id);
-  const goals = getGoalsByOrgIds(parentOrgIds);
+  const allGoals = getGoalsByOrgIds(parentOrgIds).filter((g) => canViewGoal(user, g));
+  const goals = input.include_past_periods ? allGoals : filterCurrentGoals(allGoals);
 
   // Group goals by organization
   const goalsByOrg = new Map<string, Goal[]>();
@@ -88,6 +100,8 @@ export function getParentGoals(input: GetParentGoalsInput): GetParentGoalsResult
         keyResults: parseKeyResults(g.keyResults),
         status: g.status,
         progress: g.progress,
+        period: periodLabel(g),
+        supportsGoalId: g.parentGoalId,
       })),
     };
   });

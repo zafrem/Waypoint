@@ -67,15 +67,15 @@
       <tbody>
         ${goals.map(g => `
         <tr>
-          <td>${g.title}</td>
-          <td><span class="badge badge-${g.status === 'completed' ? 'success' : g.status === 'in_progress' ? 'warning' : 'secondary'}">${g.status}</span></td>
+          <td><a href="/goals/${g.id}">${esc(g.title)}</a></td>
+          <td><span class="badge badge-${g.status === 'completed' ? 'success' : g.status === 'in_progress' ? 'warning' : 'secondary'}">${esc(g.status)}</span></td>
           <td>
             <div class="progress-bar">
               <div class="progress-fill" style="width: ${g.progress}%"></div>
               <span class="progress-text">${g.progress}%</span>
             </div>
           </td>
-          <td><span class="badge">${g.visibility}</span></td>
+          <td><span class="badge">${esc(g.visibility)}</span></td>
         </tr>
         `).join('')}
       </tbody>

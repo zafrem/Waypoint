@@ -5,8 +5,14 @@ import {
   updateOrganization,
 } from '../../models/organization.js';
 import { getUsersByOrgId } from '../../models/user.js';
-import { getGoalsByOrgId } from '../../models/goal.js';
+import {
+  formatStandardsText,
+  getGoalsByOrgId,
+  parseStandards,
+  parseStandardsText,
+} from '../../models/goal.js';
 import { getOrganizationMcpStatus } from '../../services/mcpAccess.js';
+import { canViewGoal } from '../../services/planAccess.js';
 import { adminMiddleware } from '../middleware/admin.js';
 
 export async function organizationsRoutes(server: FastifyInstance): Promise<void> {
@@ -38,12 +44,13 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
     }
 
     const users = getUsersByOrgId(id);
-    const goals = getGoalsByOrgId(id);
+    const goals = getGoalsByOrgId(id).filter((g) => canViewGoal(request.user, g));
 
     return reply.view('organizations/view.ejs', {
       title: `${organization.name} - Waypoint`,
       user: request.user,
       organization,
+      standards: parseStandards(organization.standards),
       users,
       goals,
       mcpStatus: getOrganizationMcpStatus(organization),
@@ -68,6 +75,8 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
       title: `Edit ${organization.name} - Waypoint`,
       user: request.user,
       organization,
+      standardsText: formatStandardsText(organization.standards),
+      error: null,
     });
   });
 
@@ -77,11 +86,12 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
       name?: string;
       description?: string;
       aiGuidelines?: string;
+      standards?: string;
       mcpDisabled?: string;
     };
   }>('/organizations/:id', { preHandler: adminMiddleware }, async (request, reply) => {
     const { id } = request.params;
-    const { name, description, aiGuidelines, mcpDisabled } = request.body;
+    const { name, description, aiGuidelines, standards, mcpDisabled } = request.body;
 
     const organization = getOrganizationById(id);
     if (!organization) {
@@ -92,13 +102,26 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
       });
     }
 
-    updateOrganization(id, {
-      name: name?.trim() || undefined,
-      description: description?.trim() || undefined,
-      aiGuidelines: aiGuidelines?.trim() || undefined,
-      mcpDisabled: mcpDisabled === '1',
-    });
+    try {
+      const standardsArray = standards !== undefined ? parseStandardsText(standards) : undefined;
+      updateOrganization(id, {
+        name: name?.trim() || undefined,
+        description: description?.trim() || undefined,
+        aiGuidelines: aiGuidelines?.trim() || undefined,
+        ...(standardsArray !== undefined ? { standards: standardsArray } : {}),
+        mcpDisabled: mcpDisabled === '1',
+      });
 
-    return reply.redirect(`/organizations/${id}?success=Organization updated`);
+      return reply.redirect(`/organizations/${id}?success=Organization updated`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update organization';
+      return reply.view('organizations/edit.ejs', {
+        title: `Edit ${organization.name} - Waypoint`,
+        user: request.user,
+        organization,
+        standardsText: standards ?? formatStandardsText(organization.standards),
+        error: message,
+      });
+    }
   });
 }

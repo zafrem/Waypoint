@@ -1,7 +1,9 @@
 import { getDb } from './index.js';
 import { createOrganization } from '../models/organization.js';
 import { createUser } from '../models/user.js';
-import { createGoal } from '../models/goal.js';
+import { createGoal, currentPeriods } from '../models/goal.js';
+import { addParticipant, setPlan } from '../models/participant.js';
+import { raiseGrayArea } from '../models/grayArea.js';
 import { createRole } from '../models/role.js';
 
 // Organization IDs
@@ -60,8 +62,12 @@ export function seedDatabase(): void {
   const db = getDb();
 
   // Clear existing data
+  db.exec('DELETE FROM web_sessions');
+  db.exec('DELETE FROM user_preferences');
   db.exec('DELETE FROM role_permissions');
   db.exec('DELETE FROM roles');
+  db.exec('DELETE FROM gray_areas');
+  db.exec('DELETE FROM goal_participants');
   db.exec('DELETE FROM comments');
   db.exec('DELETE FROM goals');
   db.exec('DELETE FROM users');
@@ -91,6 +97,21 @@ function createOrganizations(): void {
     aiGuidelines: `- Always prioritize customer impact in recommendations
 - Consider cross-team dependencies when suggesting solutions
 - Maintain security and compliance in all technical decisions`,
+    standards: [
+      {
+        type: 'term',
+        name: 'Member Serial',
+        identifier: 'membersrl',
+        content:
+          'Unique identifier for a customer, consisting of 8 to 16 digits. Always use `membersrl` as the standard variable and metadata field name.',
+      },
+      {
+        type: 'function',
+        name: 'Validate Member Serial',
+        identifier: 'isValidMemberSrl(membersrl)',
+        content: 'Common validation helper that checks whether `membersrl` is an 8 to 16 digit string.',
+      },
+    ],
   });
 
   // Level 1: Departments
@@ -423,7 +444,11 @@ function createUsers(): void {
 
 function createGoals(): void {
   // Level 0: Acme Corp goals
+  const { year, quarter } = currentPeriods();
   createGoal({
+    id: GOAL_IDS.MARKET_LEADERSHIP,
+    periodType: 'annual',
+    period: year,
     orgId: ORG_IDS.ACME_CORP,
     ownerId: USER_IDS.CEO,
     title: 'Achieve Market Leadership',
@@ -667,7 +692,77 @@ function createGoals(): void {
     status: 'in_progress',
     progress: 35,
   });
+
+  // Quarterly goals: one supports the annual goal above, one stands alone, one is from a past quarter
+  createGoal({
+    id: GOAL_IDS.ENTERPRISE_DEALS,
+    orgId: ORG_IDS.ENTERPRISE_SALES,
+    ownerId: USER_IDS.ENTERPRISE_LEAD,
+    title: 'Close 10 Enterprise Deals This Quarter',
+    description: 'Quarterly push toward the annual market share target',
+    keyResults: ['10 signed enterprise contracts', '$2M new ARR'],
+    periodType: 'quarterly',
+    period: quarter,
+    parentGoalId: GOAL_IDS.MARKET_LEADERSHIP,
+    status: 'in_progress',
+    progress: 40,
+  });
+
+  // The leader set the objective; the people doing the work wrote how they will get there.
+  const deals = GOAL_IDS.ENTERPRISE_DEALS;
+  addParticipant(deals, USER_IDS.SMB_LEAD, 'contributor');
+  addParticipant(deals, USER_IDS.VP_SALES, 'reviewer');
+  setPlan(
+    deals,
+    USER_IDS.ENTERPRISE_LEAD,
+    'Focus on the 15 accounts already in late-stage pipeline. Weekly deal reviews; bring in solutions engineering by stage 3.'
+  );
+  setPlan(
+    deals,
+    USER_IDS.SMB_LEAD,
+    'Route upsell-ready SMB customers to enterprise once they pass 200 seats, and share the usage data behind it.'
+  );
+  raiseGrayArea({
+    goalId: deals,
+    authorId: USER_IDS.VP_SALES,
+    planUserId: USER_IDS.SMB_LEAD,
+    content: 'Does an SMB account that upgrades count toward the 10 enterprise deals, or only new logos?',
+  });
+
+  createGoal({
+    orgId: ORG_IDS.ENTERPRISE_SALES,
+    ownerId: USER_IDS.ENTERPRISE_LEAD,
+    title: 'Refresh Sales Onboarding Playbook',
+    description: 'Quarterly goal with no annual parent',
+    periodType: 'quarterly',
+    period: quarter,
+    status: 'not_started',
+    progress: 0,
+  });
+
+  createGoal({
+    orgId: ORG_IDS.ENTERPRISE_SALES,
+    ownerId: USER_IDS.ENTERPRISE_LEAD,
+    title: 'Launch Partner Referral Pilot',
+    description: 'Finished last quarter; kept for history, hidden from the default context',
+    periodType: 'quarterly',
+    period: previousQuarter(),
+    parentGoalId: GOAL_IDS.MARKET_LEADERSHIP,
+    status: 'completed',
+    progress: 100,
+  });
 }
 
+function previousQuarter(): string {
+  const now = new Date();
+  const index = now.getFullYear() * 4 + Math.floor(now.getMonth() / 3) - 1;
+  return `${Math.floor(index / 4)}-Q${(index % 4) + 1}`;
+}
+
+const GOAL_IDS = {
+  MARKET_LEADERSHIP: 'goal-acme-market-leadership',
+  ENTERPRISE_DEALS: 'goal-enterprise-deals',
+};
+
 // Export for programmatic use
-export { ORG_IDS, USER_IDS, ROLE_IDS };
+export { ORG_IDS, USER_IDS, ROLE_IDS, GOAL_IDS };

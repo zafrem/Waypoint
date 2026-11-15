@@ -1,26 +1,34 @@
 <%- include('../layouts/main', { body: `
 <div class="page-header">
   <h1>Edit Organization</h1>
-  <p class="page-subtitle">Update ${organization.name}</p>
+  <p class="page-subtitle">Update ${esc(organization.name)}</p>
 </div>
+
+${typeof error !== 'undefined' && error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
 
 <div class="card">
   <div class="card-body">
     <form action="/organizations/${organization.id}" method="POST" class="form">
       <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" id="name" name="name" value="${organization.name}" required>
+        <input type="text" id="name" name="name" value="${esc(organization.name)}" required>
       </div>
 
       <div class="form-group">
         <label for="description">Description</label>
-        <textarea id="description" name="description" rows="3">${organization.description || ''}</textarea>
+        <textarea id="description" name="description" rows="3">${esc(organization.description || '')}</textarea>
       </div>
 
       <div class="form-group">
         <label for="aiGuidelines">AI Guidelines</label>
-        <textarea id="aiGuidelines" name="aiGuidelines" rows="8" placeholder="Guidelines for AI assistants working with this organization...">${organization.aiGuidelines || ''}</textarea>
+        <textarea id="aiGuidelines" name="aiGuidelines" rows="8" placeholder="Guidelines for AI assistants working with this organization...">${esc(organization.aiGuidelines || '')}</textarea>
         <small class="form-help">These guidelines will be provided to AI assistants to help them understand how to work with this organization.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="standards">Terminology &amp; Coding Standards</label>
+        <textarea id="standards" name="standards" rows="6" placeholder="term | Member Serial | membersrl | Unique identifier for a customer, consisting of 8 to 16 digits.&#10;function | Validate Member Serial | isValidMemberSrl(membersrl) | Returns true if membersrl is an 8-16 digit string.">${esc(typeof standardsText !== 'undefined' ? standardsText : '')}</textarea>
+        <small class="form-help">One per line: <code>type | name | identifier | description</code> (or <code>type | name | description</code>), where type is <code>term</code>, <code>variable</code>, <code>metadata</code>, <code>function</code>, <code>document</code>, <code>ui_element</code>, or <code>template</code>. Child organizations inherit these automatically.</small>
       </div>
 
       <div class="form-group">

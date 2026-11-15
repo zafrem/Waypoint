@@ -4,6 +4,16 @@
 
   const orgTree = JSON.parse(treeEl.getAttribute('data-tree'));
 
+  function esc(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // SVG Icons (Feather/Lucide style)
   const ICON_COLLAPSED = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
   const ICON_EXPANDED = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
@@ -28,7 +38,7 @@
     html += `<span class="org-toggle" aria-hidden="true">${hasChildren ? (isExpanded ? ICON_EXPANDED : ICON_COLLAPSED) : ICON_LEAF}</span>`;
     
     // Org Name link
-    html += `<a href="/organizations/${node.id}" class="org-name" onclick="event.stopPropagation()">${node.name}</a>`;
+    html += `<a href="/organizations/${esc(node.id)}" class="org-name" onclick="event.stopPropagation()">${esc(node.name)}</a>`;
     
     // Badges
     html += `<span class="org-badges">`;
@@ -50,9 +60,9 @@
     if (node.leader) {
       html += `<div class="org-leader">`;
       html += `<span class="org-leader-label">Leader:</span> `;
-      html += `<a href="/users/${node.leader.id}">${node.leader.name}</a>`;
+      html += `<a href="/users/${esc(node.leader.id)}">${esc(node.leader.name)}</a>`;
       if (node.leader.jobFunction) {
-        html += ` <span class="text-muted">(${node.leader.jobFunction})</span>`;
+        html += ` <span class="text-muted">(${esc(node.leader.jobFunction)})</span>`;
       }
       html += `</div>`;
     } else {

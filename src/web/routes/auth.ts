@@ -1,14 +1,18 @@
 import { FastifyInstance } from 'fastify';
-import { getUserByEmail } from '../../models/user.js';
-import { createSession, deleteSessionByToken } from '../../models/webSession.js';
+import { getUserByEmail, getUserById } from '../../models/user.js';
+import { createSession, deleteSessionByToken, getValidSessionByToken } from '../../models/webSession.js';
 import { setSessionCookie, clearSessionCookie, getSessionToken } from '../middleware/auth.js';
 
 export async function authRoutes(server: FastifyInstance): Promise<void> {
   server.get('/auth/login', async (request, reply) => {
     const token = getSessionToken(request);
     if (token) {
-      // Already logged in, redirect to dashboard
-      return reply.redirect('/');
+      const session = getValidSessionByToken(token);
+      if (session && getUserById(session.userId)) {
+        // Already logged in with a valid session, redirect to dashboard
+        return reply.redirect('/');
+      }
+      clearSessionCookie(reply);
     }
 
     return reply.view('auth/login.ejs', {

@@ -1,5 +1,8 @@
 // Enums
 export type GoalStatus = 'not_started' | 'in_progress' | 'completed' | 'cancelled';
+export type GoalPeriodType = 'annual' | 'quarterly';
+export type ParticipantRole = 'driver' | 'contributor' | 'reviewer';
+export type GrayAreaStatus = 'open' | 'resolved';
 export type GoalVisibility = 'public' | 'private' | 'team_only';
 export type CommentType = 'question' | 'response' | 'note';
 export type CommentStatus = 'pending' | 'answered' | 'closed';
@@ -22,6 +25,7 @@ export interface Organization {
   name: string;
   description: string | null;
   aiGuidelines: string | null;
+  standards: string | null; // JSON string of Standard[]
   mcpDisabled: boolean;
   createdAt: string;
   updatedAt: string;
@@ -41,11 +45,20 @@ export interface User {
   updatedAt: string;
 }
 
-export type StandardType = 'document' | 'term' | 'ui_element' | 'template';
+export type StandardType =
+  | 'document'
+  | 'term'
+  | 'variable'
+  | 'metadata'
+  | 'function'
+  | 'ui_element'
+  | 'template';
 
 export interface Standard {
   type: StandardType;
   name: string;
+  /** Standard identifier, variable/metadata field name, or function signature (e.g., `membersrl`). */
+  identifier?: string | null;
   content: string;
 }
 
@@ -70,11 +83,36 @@ export interface Goal {
   description: string | null;
   keyResults: string | null; // JSON string of key results
   standards: string | null; // JSON string of Standard[]
+  periodType: GoalPeriodType | null; // null = ongoing, no period
+  period: string | null; // '2026' (annual) or '2026-Q3' (quarterly)
+  parentGoalId: string | null; // annual goal a quarterly goal supports
   status: GoalStatus;
   progress: number;
   visibility: GoalVisibility;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface GoalParticipant {
+  goalId: string;
+  userId: string;
+  role: ParticipantRole;
+  plan: string | null;
+  planUpdatedAt: string | null;
+  createdAt: string;
+}
+
+export interface GrayArea {
+  id: string;
+  goalId: string;
+  planUserId: string | null; // null = about the goal itself, not one person's plan
+  authorId: string;
+  content: string;
+  status: GrayAreaStatus;
+  resolution: string | null;
+  resolvedBy: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
 }
 
 export interface Comment {
@@ -124,6 +162,7 @@ export interface OrganizationRow {
   name: string;
   description: string | null;
   ai_guidelines: string | null;
+  standards?: string | null;
   mcp_disabled: number;
   created_at: string;
   updated_at: string;
@@ -164,11 +203,36 @@ export interface GoalRow {
   description: string | null;
   key_results: string | null;
   standards: string | null;
+  period_type: GoalPeriodType | null;
+  period: string | null;
+  parent_goal_id: string | null;
   status: GoalStatus;
   progress: number;
   visibility: GoalVisibility;
   created_at: string;
   updated_at: string;
+}
+
+export interface GoalParticipantRow {
+  goal_id: string;
+  user_id: string;
+  role: ParticipantRole;
+  plan: string | null;
+  plan_updated_at: string | null;
+  created_at: string;
+}
+
+export interface GrayAreaRow {
+  id: string;
+  goal_id: string;
+  plan_user_id: string | null;
+  author_id: string;
+  content: string;
+  status: GrayAreaStatus;
+  resolution: string | null;
+  resolved_by: string | null;
+  created_at: string;
+  resolved_at: string | null;
 }
 
 export interface CommentRow {
@@ -219,6 +283,7 @@ export function toOrganization(row: OrganizationRow): Organization {
     name: row.name,
     description: row.description,
     aiGuidelines: row.ai_guidelines,
+    standards: row.standards ?? null,
     mcpDisabled: row.mcp_disabled === 1,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -260,11 +325,40 @@ export function toGoal(row: GoalRow): Goal {
     description: row.description,
     keyResults: row.key_results,
     standards: row.standards,
+    periodType: row.period_type,
+    period: row.period,
+    parentGoalId: row.parent_goal_id,
     status: row.status,
     progress: row.progress,
     visibility: row.visibility,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+export function toGoalParticipant(row: GoalParticipantRow): GoalParticipant {
+  return {
+    goalId: row.goal_id,
+    userId: row.user_id,
+    role: row.role,
+    plan: row.plan,
+    planUpdatedAt: row.plan_updated_at,
+    createdAt: row.created_at,
+  };
+}
+
+export function toGrayArea(row: GrayAreaRow): GrayArea {
+  return {
+    id: row.id,
+    goalId: row.goal_id,
+    planUserId: row.plan_user_id,
+    authorId: row.author_id,
+    content: row.content,
+    status: row.status,
+    resolution: row.resolution,
+    resolvedBy: row.resolved_by,
+    createdAt: row.created_at,
+    resolvedAt: row.resolved_at,
   };
 }
 
@@ -317,6 +411,13 @@ export function toWebSession(row: WebSessionRow): WebSession {
 }
 
 // Context types for MCP resources
+export interface InheritedStandard extends Standard {
+  sourceOrgId: string;
+  sourceOrgName: string;
+  sourceGoalId?: string;
+  sourceGoalTitle?: string;
+}
+
 export interface UserContext {
   user: User;
   organization: Organization;
@@ -324,4 +425,13 @@ export interface UserContext {
   currentGoals: Goal[];
   parentGoals: Goal[];
   guidelines: string[];
+  standards: InheritedStandard[];
+  work: GoalWork[];
+}
+
+/** A goal the user works on, with everyone's plans and the open gray areas. */
+export interface GoalWork {
+  goal: Goal;
+  participants: Array<{ user: User; role: ParticipantRole; plan: string | null }>;
+  openGrayAreas: Array<GrayArea & { authorName: string; planUserName: string | null }>;
 }

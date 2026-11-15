@@ -33,6 +33,21 @@ import {
   semanticSearchSchema,
 } from './tools/semanticSearch.js';
 
+import {
+  getGoalPlans,
+  getGoalPlansSchema,
+  raiseGrayAreaSchema,
+  raiseGrayAreaTool,
+  resolveGrayAreaSchema,
+  resolveGrayAreaTool,
+  updateMyPlan,
+  updateMyPlanSchema,
+} from './tools/goalPlans.js';
+import {
+  lookupStandards,
+  lookupStandardsSchema,
+} from './tools/lookupStandards.js';
+
 export function createMcpServer(): Server {
   const server = new Server(
     {
@@ -129,6 +144,11 @@ export function createMcpServer(): Server {
                 type: 'string',
                 description: 'The organization ID to get parent goals for',
               },
+              include_past_periods: {
+                type: 'boolean',
+                description:
+                  'Also include goals from other years/quarters (default: current period only)',
+              },
             },
             required: ['org_id'],
           },
@@ -144,8 +164,67 @@ export function createMcpServer(): Server {
                 type: 'string',
                 description: 'Keyword to search for in goal titles and descriptions',
               },
+              include_past_periods: {
+                type: 'boolean',
+                description:
+                  'Also include goals from other years/quarters (default: current period only)',
+              },
             },
             required: ['keyword'],
+          },
+        },
+        {
+          name: 'get_goal_plans',
+          description:
+            "Get everyone's execution plans and the gray areas (unclear points) for a goal you work on. Plans are only shared with the people working on the same goal.",
+          inputSchema: {
+            type: 'object',
+            properties: {
+              goal_id: { type: 'string', description: 'The ID of a goal you work on' },
+            },
+            required: ['goal_id'],
+          },
+        },
+        {
+          name: 'update_my_plan',
+          description:
+            'Write or update your own execution plan for a goal you work on: what you will do and how you read its key results. Leaders set objectives; the people doing the work write the plans.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              goal_id: { type: 'string', description: 'The ID of a goal you work on' },
+              plan: { type: 'string', description: 'Your execution plan for the goal' },
+            },
+            required: ['goal_id', 'plan'],
+          },
+        },
+        {
+          name: 'raise_gray_area',
+          description:
+            "Flag something unclear in a goal or a teammate's plan so the group can clarify it. Visible only to the people working on the goal.",
+          inputSchema: {
+            type: 'object',
+            properties: {
+              goal_id: { type: 'string', description: 'The ID of a goal you work on' },
+              question: { type: 'string', description: 'What is unclear or ambiguous' },
+              plan_user_id: {
+                type: 'string',
+                description: 'User ID of the teammate whose plan this is about (omit if about the goal itself)',
+              },
+            },
+            required: ['goal_id', 'question'],
+          },
+        },
+        {
+          name: 'resolve_gray_area',
+          description: 'Record how an open gray area was clarified.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              gray_area_id: { type: 'string', description: 'The ID of the open gray area' },
+              resolution: { type: 'string', description: 'How it was clarified' },
+            },
+            required: ['gray_area_id', 'resolution'],
           },
         },
         {
@@ -180,6 +259,26 @@ export function createMcpServer(): Server {
               },
             },
             required: ['query'],
+          },
+        },
+        {
+          name: 'lookup_standards',
+          description:
+            'Look up standard term definitions, variable/metadata field names (e.g. membersrl), and common functions that everyone in your organization and active goals must follow.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              query: {
+                type: 'string',
+                description:
+                  'Optional keyword to search by term name, standard identifier (e.g. "membersrl"), or description',
+              },
+              type: {
+                type: 'string',
+                enum: ['document', 'term', 'variable', 'metadata', 'function', 'ui_element', 'template'],
+                description: 'Optional filter by standard type',
+              },
+            },
           },
         },
       ],
@@ -220,6 +319,23 @@ export function createMcpServer(): Server {
         };
       }
 
+      case 'get_goal_plans':
+      case 'update_my_plan':
+      case 'raise_gray_area':
+      case 'resolve_gray_area': {
+        const result =
+          name === 'get_goal_plans'
+            ? getGoalPlans(getGoalPlansSchema.parse(args))
+            : name === 'update_my_plan'
+              ? updateMyPlan(updateMyPlanSchema.parse(args))
+              : name === 'raise_gray_area'
+                ? raiseGrayAreaTool(raiseGrayAreaSchema.parse(args))
+                : resolveGrayAreaTool(resolveGrayAreaSchema.parse(args));
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+        };
+      }
+
       case 'submit_question': {
         const input = submitQuestionSchema.parse(args);
         const result = submitQuestion(input);
@@ -236,6 +352,19 @@ export function createMcpServer(): Server {
       case 'semantic_search': {
         const input = semanticSearchSchema.parse(args);
         const result = semanticSearch(input);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'lookup_standards': {
+        const input = lookupStandardsSchema.parse(args ?? {});
+        const result = lookupStandards(input);
         return {
           content: [
             {

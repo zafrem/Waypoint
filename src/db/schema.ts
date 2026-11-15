@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS organizations (
   name TEXT NOT NULL,
   description TEXT,
   ai_guidelines TEXT,
+  standards TEXT,
   mcp_disabled INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -51,11 +52,39 @@ CREATE TABLE IF NOT EXISTS goals (
   description TEXT,
   key_results TEXT,
   standards TEXT,
+  period_type TEXT CHECK (period_type IN ('annual', 'quarterly')),
+  period TEXT,
+  parent_goal_id TEXT REFERENCES goals(id),
   status TEXT NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'completed', 'cancelled')),
   progress INTEGER NOT NULL DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
   visibility TEXT NOT NULL DEFAULT 'public' CHECK (visibility IN ('public', 'private', 'team_only')),
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Goal participants: who works on a goal, and each person's own execution plan
+CREATE TABLE IF NOT EXISTS goal_participants (
+  goal_id TEXT NOT NULL REFERENCES goals(id),
+  user_id TEXT NOT NULL REFERENCES users(id),
+  role TEXT NOT NULL DEFAULT 'contributor' CHECK (role IN ('driver', 'contributor', 'reviewer')),
+  plan TEXT,
+  plan_updated_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (goal_id, user_id)
+);
+
+-- Gray areas: unclear parts of a goal or a participant's plan, raised and resolved by participants
+CREATE TABLE IF NOT EXISTS gray_areas (
+  id TEXT PRIMARY KEY,
+  goal_id TEXT NOT NULL REFERENCES goals(id),
+  plan_user_id TEXT REFERENCES users(id),
+  author_id TEXT NOT NULL REFERENCES users(id),
+  content TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved')),
+  resolution TEXT,
+  resolved_by TEXT REFERENCES users(id),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  resolved_at TEXT
 );
 
 -- Comments table
@@ -107,6 +136,8 @@ CREATE INDEX IF NOT EXISTS idx_organizations_parent ON organizations(parent_id);
 CREATE INDEX IF NOT EXISTS idx_users_org ON users(org_id);
 CREATE INDEX IF NOT EXISTS idx_goals_org ON goals(org_id);
 CREATE INDEX IF NOT EXISTS idx_goals_owner ON goals(owner_id);
+CREATE INDEX IF NOT EXISTS idx_participants_user ON goal_participants(user_id);
+CREATE INDEX IF NOT EXISTS idx_gray_areas_goal ON gray_areas(goal_id);
 CREATE INDEX IF NOT EXISTS idx_comments_goal ON comments(goal_id);
 CREATE INDEX IF NOT EXISTS idx_comments_author ON comments(author_id);
 CREATE INDEX IF NOT EXISTS idx_user_preferences_user ON user_preferences(user_id);

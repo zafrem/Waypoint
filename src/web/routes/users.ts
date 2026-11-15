@@ -4,6 +4,7 @@ import { getOrganizationById, getAllOrganizations } from '../../models/organizat
 import { getGoalsByOwnerId } from '../../models/goal.js';
 import { getAllRoles, getRoleById } from '../../models/role.js';
 import { getUserMcpStatus } from '../../services/mcpAccess.js';
+import { canViewGoal } from '../../services/planAccess.js';
 import { adminMiddleware } from '../middleware/admin.js';
 
 export async function usersRoutes(server: FastifyInstance): Promise<void> {
@@ -43,7 +44,7 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
     }
 
     const organization = getOrganizationById(targetUser.orgId);
-    const goals = getGoalsByOwnerId(id);
+    const goals = getGoalsByOwnerId(id).filter((g) => canViewGoal(request.user, g));
     const role = targetUser.roleId ? getRoleById(targetUser.roleId) : null;
 
     return reply.view('users/view.ejs', {
@@ -80,6 +81,7 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
       targetUser,
       organizations,
       roles,
+      error: null,
     });
   });
 
@@ -105,14 +107,28 @@ export async function usersRoutes(server: FastifyInstance): Promise<void> {
       });
     }
 
-    updateUser(id, {
-      name: name?.trim() || undefined,
-      email: email?.trim() || undefined,
-      jobFunction: jobFunction?.trim() || undefined,
-      roleId: roleId || null,
-      mcpDisabled: mcpDisabled === '1',
-    });
+    try {
+      updateUser(id, {
+        name: name?.trim() || undefined,
+        email: email?.trim() || undefined,
+        jobFunction: jobFunction?.trim() || undefined,
+        roleId: roleId !== undefined ? roleId || null : targetUser.roleId,
+        mcpDisabled: mcpDisabled === '1',
+      });
 
-    return reply.redirect(`/users/${id}?success=User updated`);
+      return reply.redirect(`/users/${id}?success=User updated`);
+    } catch (error: unknown) {
+      const organizations = getAllOrganizations();
+      const roles = getAllRoles();
+      const message = error instanceof Error ? error.message : 'Failed to update user';
+      return reply.view('users/edit.ejs', {
+        title: `Edit ${targetUser.name} - Waypoint`,
+        user: request.user,
+        targetUser,
+        organizations,
+        roles,
+        error: message.includes('UNIQUE') ? 'Email already exists' : message,
+      });
+    }
   });
 }

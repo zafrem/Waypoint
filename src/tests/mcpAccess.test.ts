@@ -126,6 +126,10 @@ test('MCP access control - disabling per user and organization', async (t) => {
         client.callTool({ name: 'search_collaborator_goals', arguments: { keyword: 'x' } }),
         /Unknown tool/
       );
+      await assert.rejects(
+        client.callTool({ name: 'get_goal_plans', arguments: { goal_id: 'x' } }),
+        /Unknown tool/
+      );
     } finally {
       await close();
     }
@@ -137,7 +141,7 @@ test('MCP access control - disabling per user and organization', async (t) => {
     try {
       assert.strictEqual((await client.listResources()).resources.length, 1);
       assert.strictEqual((await client.listPrompts()).prompts.length, 1);
-      assert.strictEqual((await client.listTools()).tools.length, 4);
+      assert.strictEqual((await client.listTools()).tools.length, 9);
       const read = await client.readResource({ uri: CURRENT_USER_RESOURCE_URI });
       assert.match(JSON.stringify(read.contents[0]), /Market Leadership/);
     } finally {
@@ -149,11 +153,11 @@ test('MCP access control - disabling per user and organization', async (t) => {
     process.env.WAYPOINT_USER_ID = USER_IDS.CEO;
     const { client, close } = await connectClient();
     try {
-      assert.strictEqual((await client.listTools()).tools.length, 4);
+      assert.strictEqual((await client.listTools()).tools.length, 9);
       updateUser(USER_IDS.CEO, { mcpDisabled: true });
       assert.deepStrictEqual((await client.listTools()).tools, []);
       updateUser(USER_IDS.CEO, { mcpDisabled: false });
-      assert.strictEqual((await client.listTools()).tools.length, 4);
+      assert.strictEqual((await client.listTools()).tools.length, 9);
     } finally {
       await close();
     }

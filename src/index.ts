@@ -9,7 +9,7 @@ async function main(): Promise<void> {
   // Initialize database
   getDb();
 
-  // Start web server (if enabled)
+  // Start web server (if enabled) — writes to stderr so stdout remains clean for MCP stdio JSON-RPC
   if (config.webEnabled) {
     await startWebServer();
   }

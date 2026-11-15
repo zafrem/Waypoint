@@ -4,7 +4,7 @@
   <p class="page-subtitle">Create a new user in the system</p>
 </div>
 
-${error ? `<div class="alert alert-error">${error}</div>` : ''}
+${error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
 
 <div class="card">
   <div class="card-body">
@@ -26,7 +26,7 @@ ${error ? `<div class="alert alert-error">${error}</div>` : ''}
           <select id="orgId" name="orgId" required>
             <option value="">Select organization...</option>
             ${organizations.map(org => `
-              <option value="${org.id}">${org.name}</option>
+              <option value="${org.id}">${esc(org.name)}</option>
             `).join('')}
           </select>
         </div>

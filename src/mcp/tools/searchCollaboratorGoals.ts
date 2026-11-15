@@ -3,12 +3,16 @@ import { isMcpDisabled } from '../../services/mcpAccess.js';
 import { getConfig } from '../../config/index.js';
 import { getUserById } from '../../models/user.js';
 import { getOrganizationById } from '../../models/organization.js';
-import { searchGoals, getVisibleGoals } from '../../models/goal.js';
+import { filterCurrentGoals, periodLabel, searchGoals } from '../../models/goal.js';
 import { getAccessibleOrgIds } from '../../rbac/relationships.js';
 import { Goal } from '../../models/types.js';
 
 export const searchCollaboratorGoalsSchema = z.object({
   keyword: z.string().describe('Keyword to search for in goal titles and descriptions'),
+  include_past_periods: z
+    .boolean()
+    .optional()
+    .describe('Also include goals from other years/quarters (default: current period only)'),
 });
 
 export type SearchCollaboratorGoalsInput = z.infer<typeof searchCollaboratorGoalsSchema>;
@@ -20,6 +24,8 @@ export interface CollaboratorGoalResult {
   keyResults: string[];
   status: string;
   progress: number;
+  period: string | null;
+  supportsGoalId: string | null;
   organization: {
     id: string;
     name: string;
@@ -70,7 +76,8 @@ export function searchCollaboratorGoals(
   }
 
   // Search for goals matching the keyword within accessible organizations
-  const goals = searchGoals(input.keyword, accessibleOrgIds);
+  const matches = searchGoals(input.keyword, accessibleOrgIds);
+  const goals = input.include_past_periods ? matches : filterCurrentGoals(matches);
 
   // Filter to only show visible goals (public or team_only)
   // User's own org goals are always visible
@@ -89,6 +96,8 @@ export function searchCollaboratorGoals(
       keyResults: parseKeyResults(goal.keyResults),
       status: goal.status,
       progress: goal.progress,
+      period: periodLabel(goal),
+      supportsGoalId: goal.parentGoalId,
       organization: {
         id: goal.orgId,
         name: org?.name || 'Unknown',

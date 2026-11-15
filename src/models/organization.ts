@@ -2,6 +2,7 @@ import { getDb } from '../db/index.js';
 import {
   Organization,
   OrganizationRow,
+  Standard,
   toOrganization,
 } from './types.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,6 +13,7 @@ export interface CreateOrganizationInput {
   name: string;
   description?: string | null;
   aiGuidelines?: string | null;
+  standards?: Standard[] | null;
   mcpDisabled?: boolean;
 }
 
@@ -19,6 +21,7 @@ export interface UpdateOrganizationInput {
   name?: string;
   description?: string | null;
   aiGuidelines?: string | null;
+  standards?: Standard[] | null;
   mcpDisabled?: boolean;
 }
 
@@ -28,8 +31,8 @@ export function createOrganization(input: CreateOrganizationInput): Organization
   const now = new Date().toISOString();
 
   const stmt = db.prepare(`
-    INSERT INTO organizations (id, parent_id, name, description, ai_guidelines, mcp_disabled, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO organizations (id, parent_id, name, description, ai_guidelines, standards, mcp_disabled, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   stmt.run(
@@ -38,6 +41,7 @@ export function createOrganization(input: CreateOrganizationInput): Organization
     input.name,
     input.description ?? null,
     input.aiGuidelines ?? null,
+    input.standards?.length ? JSON.stringify(input.standards) : null,
     input.mcpDisabled ? 1 : 0,
     now,
     now
@@ -129,6 +133,10 @@ export function updateOrganization(
     updates.push('ai_guidelines = ?');
     values.push(input.aiGuidelines);
   }
+  if (input.standards !== undefined) {
+    updates.push('standards = ?');
+    values.push(input.standards?.length ? JSON.stringify(input.standards) : null);
+  }
   if (input.mcpDisabled !== undefined) {
     updates.push('mcp_disabled = ?');
     values.push(input.mcpDisabled ? 1 : 0);
@@ -148,7 +156,9 @@ export function updateOrganization(
 
 export function deleteOrganization(id: string): boolean {
   const db = getDb();
-  const stmt = db.prepare('DELETE FROM organizations WHERE id = ?');
-  const result = stmt.run(id);
-  return result.changes > 0;
+  const tx = db.transaction(() => {
+    db.prepare('UPDATE organizations SET parent_id = NULL WHERE parent_id = ?').run(id);
+    return db.prepare('DELETE FROM organizations WHERE id = ?').run(id).changes > 0;
+  });
+  return tx();
 }

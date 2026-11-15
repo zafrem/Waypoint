@@ -79,7 +79,10 @@ export function updateRolePermissions(roleId: string, permissions: string[]): vo
 
 export function deleteRole(id: string): boolean {
   const db = getDb();
-  const stmt = db.prepare('DELETE FROM roles WHERE id = ?');
-  const result = stmt.run(id);
-  return result.changes > 0;
+  const tx = db.transaction(() => {
+    db.prepare('UPDATE users SET role_id = NULL WHERE role_id = ?').run(id);
+    db.prepare('DELETE FROM role_permissions WHERE role_id = ?').run(id);
+    return db.prepare('DELETE FROM roles WHERE id = ?').run(id).changes > 0;
+  });
+  return tx();
 }

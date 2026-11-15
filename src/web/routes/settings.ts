@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { getAllAppSettings, setAppSetting, deleteAppSetting } from '../../models/appSettings.js';
 import { getConfig } from '../../config/index.js';
 import { SettingType } from '../../models/types.js';
+import { adminMiddleware } from '../middleware/admin.js';
 
 export async function settingsRoutes(server: FastifyInstance): Promise<void> {
   server.get('/settings', async (request, reply) => {
@@ -11,6 +12,7 @@ export async function settingsRoutes(server: FastifyInstance): Promise<void> {
     return reply.view('settings/index.ejs', {
       title: 'App Settings - Waypoint',
       user: request.user,
+      currentPath: '/settings',
       settings,
       config: {
         dbPath: config.dbPath,
@@ -27,7 +29,7 @@ export async function settingsRoutes(server: FastifyInstance): Promise<void> {
       description?: string;
       type?: SettingType;
     };
-  }>('/settings', async (request, reply) => {
+  }>('/settings', { preHandler: adminMiddleware }, async (request, reply) => {
     const { key, value, description, type } = request.body;
 
     if (!key || !value) {
@@ -46,7 +48,7 @@ export async function settingsRoutes(server: FastifyInstance): Promise<void> {
 
   server.post<{
     Body: { key: string };
-  }>('/settings/delete', async (request, reply) => {
+  }>('/settings/delete', { preHandler: adminMiddleware }, async (request, reply) => {
     const { key } = request.body;
 
     if (key) {

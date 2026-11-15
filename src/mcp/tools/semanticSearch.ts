@@ -2,10 +2,11 @@ import { z } from 'zod';
 import { isMcpDisabled } from '../../services/mcpAccess.js';
 import { getConfig } from '../../config/index.js';
 import { getUserById } from '../../models/user.js';
-import { getAllGoals } from '../../models/goal.js';
+import { filterCurrentGoals, getAllGoals } from '../../models/goal.js';
 import { getOrganizationById } from '../../models/organization.js';
 import { computeRelationship } from '../../rbac/relationships.js';
 import { hasPermission } from '../../rbac/permissions.js';
+import { canViewGoal } from '../../services/planAccess.js';
 import { Goal } from '../../models/types.js';
 
 export const semanticSearchSchema = z.object({
@@ -62,11 +63,11 @@ export function semanticSearch(input: SemanticSearchInput): SemanticSearchResult
     };
   }
 
-  const allGoals = getAllGoals();
+  const allGoals = filterCurrentGoals(getAllGoals());
   const results: SemanticSearchResult['results'] = [];
 
   // Simulate semantic matching
-  const keywords = input.query.toLowerCase().split(/\s+/);
+  const keywords = input.query.toLowerCase().trim().split(/\s+/).filter(Boolean);
   
   for (const goal of allGoals) {
     // RBAC Check for each individual goal
@@ -75,20 +76,17 @@ export function semanticSearch(input: SemanticSearchInput): SemanticSearchResult
       continue;
     }
 
-    // Visibility Check: 
-    // - Own org goals are always visible
-    // - Others must be public or team_only
-    // - Admins see everything
-    if (!user.isAdmin && goal.orgId !== user.orgId && goal.visibility === 'private') {
+    // Visibility Check
+    if (!canViewGoal(user, goal)) {
       continue;
     }
 
     // Simple keyword score simulation
     let score = 0;
-    const content = `${goal.title} ${goal.description || ''}`.toLowerCase();
+    const content = `${goal.title} ${goal.description || ''} ${goal.keyResults || ''} ${goal.standards || ''}`.toLowerCase();
     
     for (const kw of keywords) {
-      if (kw.length > 3 && content.includes(kw)) {
+      if (kw.length >= 2 && content.includes(kw)) {
         score += 0.2;
       }
     }

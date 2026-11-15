@@ -4,20 +4,20 @@
   <p class="page-subtitle">${goal ? 'Update goal information' : 'Create a new goal'}</p>
 </div>
 
-${success ? `<div class="alert alert-success">${success}</div>` : ''}
-${error ? `<div class="alert alert-error">${error}</div>` : ''}
+${success ? `<div class="alert alert-success">${esc(success)}</div>` : ''}
+${error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
 
 <div class="card">
   <div class="card-body">
     <form action="${goal ? '/admin/goals/' + goal.id : '/admin/goals'}" method="POST">
       <div class="form-group">
         <label for="title">Title *</label>
-        <input type="text" id="title" name="title" value="${goal ? goal.title : ''}" required>
+        <input type="text" id="title" name="title" value="${goal ? esc(goal.title) : ''}" required>
       </div>
 
       <div class="form-group">
         <label for="description">Description</label>
-        <textarea id="description" name="description" rows="3">${goal ? (goal.description || '') : ''}</textarea>
+        <textarea id="description" name="description" rows="3">${goal ? esc(goal.description || '') : ''}</textarea>
       </div>
 
       ${goal ? '' : `
@@ -27,7 +27,7 @@ ${error ? `<div class="alert alert-error">${error}</div>` : ''}
           <select id="orgId" name="orgId" required>
             <option value="">Select organization...</option>
             ${organizations.map(org => `
-              <option value="${org.id}">${org.name}</option>
+              <option value="${esc(org.id)}">${esc(org.name)}</option>
             `).join('')}
           </select>
         </div>
@@ -36,7 +36,7 @@ ${error ? `<div class="alert alert-error">${error}</div>` : ''}
           <select id="ownerId" name="ownerId">
             <option value="">No owner</option>
             ${users.map(u => `
-              <option value="${u.id}">${u.name}</option>
+              <option value="${esc(u.id)}">${esc(u.name)}</option>
             `).join('')}
           </select>
         </div>
@@ -47,12 +47,12 @@ ${error ? `<div class="alert alert-error">${error}</div>` : ''}
       <div class="form-row">
         <div class="form-group">
           <label>Organization</label>
-          <p class="form-static">${organizations.find(o => o.id === '${goal.orgId}')?.name || 'Unknown'}</p>
+          <p class="form-static">${esc(organizations.find(o => o.id === goal.orgId)?.name || 'Unknown')}</p>
         </div>
         <div class="form-group">
           <label>Owner</label>
           <p class="form-static">
-            ${goal.ownerId ? (users.find(u => u.id === '${goal.ownerId}')?.name || 'Unknown') : 'No owner'}
+            ${goal.ownerId ? esc(users.find(u => u.id === goal.ownerId)?.name || 'Unknown') : 'No owner'}
           </p>
         </div>
       </div>
@@ -83,16 +83,43 @@ ${error ? `<div class="alert alert-error">${error}</div>` : ''}
         </select>
       </div>
 
+      <div class="form-row">
+        <div class="form-group">
+          <label for="periodType">Period type</label>
+          <select id="periodType" name="periodType">
+            <option value="">Ongoing (no period)</option>
+            <option value="annual" ${goal && goal.periodType === 'annual' ? 'selected' : ''}>Annual</option>
+            <option value="quarterly" ${goal && goal.periodType === 'quarterly' ? 'selected' : ''}>Quarterly</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="period">Period</label>
+          <input type="text" id="period" name="period" value="${goal && goal.period ? esc(goal.period) : ''}" placeholder="2026 or 2026-Q3">
+          <span class="form-help">Annual: <code>2026</code>. Quarterly: <code>2026-Q3</code>.</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="parentGoalId">Supports annual goal (optional)</label>
+        <select id="parentGoalId" name="parentGoalId">
+          <option value="">No annual parent</option>
+          ${annualGoals.filter(a => !goal || a.id !== goal.id).map(a => `
+            <option value="${esc(a.id)}" ${goal && goal.parentGoalId === a.id ? 'selected' : ''}>${esc(a.period)} - ${esc(a.title)}</option>
+          `).join('')}
+        </select>
+        <span class="form-help">Only quarterly goals can support an annual goal.</span>
+      </div>
+
       <div class="form-group">
         <label for="keyResults">Key Results</label>
-        <textarea id="keyResults" name="keyResults" rows="5" placeholder="Enter each key result on a new line...">${goal && goal.keyResults ? JSON.parse(goal.keyResults).join('\n') : ''}</textarea>
+        <textarea id="keyResults" name="keyResults" rows="5" placeholder="Enter each key result on a new line...">${goal && goal.keyResults ? esc(JSON.parse(goal.keyResults).join('\n')) : ''}</textarea>
         <span class="form-help">Enter each key result on a separate line</span>
       </div>
 
       <div class="form-group">
         <label for="standards">Standards</label>
-        <textarea id="standards" name="standards" rows="5" placeholder="template | PR template | Summary, test plan, risks">${goal && goal.standards ? JSON.parse(goal.standards).map(s => s.type + ' | ' + s.name + ' | ' + s.content).join('\n') : ''}</textarea>
-        <span class="form-help">One per line: <code>type | name | content</code>, where type is document, term, ui_element or template. Child teams inherit these.</span>
+        <textarea id="standards" name="standards" rows="5" placeholder="term | Member Serial | membersrl | Unique identifier for a customer, consisting of 8 to 16 digits.&#10;template | PR template | Summary, test plan, risks">${goal && goal.standards ? esc(JSON.parse(goal.standards).map(s => s.identifier ? (s.type + ' | ' + s.name + ' | ' + s.identifier + ' | ' + s.content) : (s.type + ' | ' + s.name + ' | ' + s.content)).join('\n')) : ''}</textarea>
+        <span class="form-help">One per line: <code>type | name | identifier | content</code> (or <code>type | name | content</code>), where type is term, variable, metadata, function, document, ui_element or template. Child teams inherit these.</span>
       </div>
 
       <div class="form-actions">

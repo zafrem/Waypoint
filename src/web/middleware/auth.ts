@@ -1,13 +1,18 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { getValidSessionByToken } from '../../models/webSession.js';
 import { getUserById } from '../../models/user.js';
-import { User } from '../../models/types.js';
+import { getOrCreateUserPreferences } from '../../models/userPreferences.js';
+import { User, UserPreferences } from '../../models/types.js';
 
 const SESSION_COOKIE_NAME = 'waypoint_session';
 
 declare module 'fastify' {
   interface FastifyRequest {
     user?: User;
+    preferences?: UserPreferences;
+  }
+  interface FastifyReply {
+    locals?: Record<string, unknown>;
   }
 }
 
@@ -54,11 +59,14 @@ export async function authMiddleware(
   }
 
   request.user = user;
+  const preferences = getOrCreateUserPreferences(user.id);
+  request.preferences = preferences;
+  reply.locals = { ...(reply.locals || {}), preferences, currentPath: request.url.split('?')[0] };
 }
 
 export async function optionalAuthMiddleware(
   request: FastifyRequest,
-  _reply: FastifyReply
+  reply: FastifyReply
 ): Promise<void> {
   const token = getSessionToken(request);
 
@@ -74,5 +82,8 @@ export async function optionalAuthMiddleware(
   const user = getUserById(session.userId);
   if (user) {
     request.user = user;
+    const preferences = getOrCreateUserPreferences(user.id);
+    request.preferences = preferences;
+    reply.locals = { ...(reply.locals || {}), preferences, currentPath: request.url.split('?')[0] };
   }
 }

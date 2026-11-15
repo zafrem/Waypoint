@@ -1,10 +1,10 @@
 <%- include('../layouts/main', { body: `
 <div class="page-header">
   <div class="page-header-content">
-    <h1>${organization.name}</h1>
+    <h1>${esc(organization.name)}</h1>
     ${user && user.isAdmin ? `<a href="/organizations/${organization.id}/edit" class="btn btn-primary">Edit Organization</a>` : ''}
   </div>
-  <p class="page-subtitle">${organization.description || 'No description'}</p>
+  <p class="page-subtitle">${esc(organization.description || 'No description')}</p>
 </div>
 
 <div class="card">
@@ -39,7 +39,37 @@ ${organization.aiGuidelines ? `
     <h2>AI Guidelines</h2>
   </div>
   <div class="card-body">
-    <pre class="guidelines-content">${organization.aiGuidelines}</pre>
+    <pre class="guidelines-content">${esc(organization.aiGuidelines)}</pre>
+  </div>
+</div>
+` : ''}
+
+${typeof standards !== 'undefined' && standards.length > 0 ? `
+<div class="card">
+  <div class="card-header">
+    <h2>Terminology &amp; Coding Standards (${standards.length})</h2>
+  </div>
+  <div class="card-body">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Term / Name</th>
+          <th>Standard Identifier</th>
+          <th>Definition / Rules</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${standards.map(s => `
+        <tr>
+          <td><span class="badge">${esc(s.type)}</span></td>
+          <td><strong>${esc(s.name)}</strong></td>
+          <td>${s.identifier ? `<code>${esc(s.identifier)}</code>` : '-'}</td>
+          <td>${esc(s.content)}</td>
+        </tr>
+        `).join('')}
+      </tbody>
+    </table>
   </div>
 </div>
 ` : ''}
@@ -62,9 +92,9 @@ ${organization.aiGuidelines ? `
       <tbody>
         ${users.map(u => `
         <tr>
-          <td><a href="/users/${u.id}">${u.name}</a></td>
-          <td>${u.email}</td>
-          <td>${u.jobFunction || '-'}</td>
+          <td><a href="/users/${u.id}">${esc(u.name)}</a></td>
+          <td>${esc(u.email)}</td>
+          <td>${esc(u.jobFunction || '-')}</td>
           <td>
             <a href="/users/${u.id}" class="btn btn-sm btn-secondary">View</a>
           </td>
@@ -94,15 +124,15 @@ ${organization.aiGuidelines ? `
       <tbody>
         ${goals.map(g => `
         <tr>
-          <td>${g.title}</td>
-          <td><span class="badge badge-${g.status === 'completed' ? 'success' : g.status === 'in_progress' ? 'warning' : 'secondary'}">${g.status}</span></td>
+          <td><a href="/goals/${g.id}">${esc(g.title)}</a></td>
+          <td><span class="badge badge-${g.status === 'completed' ? 'success' : g.status === 'in_progress' ? 'warning' : 'secondary'}">${esc(g.status)}</span></td>
           <td>
             <div class="progress-bar">
               <div class="progress-fill" style="width: ${g.progress}%"></div>
               <span class="progress-text">${g.progress}%</span>
             </div>
           </td>
-          <td><span class="badge">${g.visibility}</span></td>
+          <td><span class="badge">${esc(g.visibility)}</span></td>
         </tr>
         `).join('')}
       </tbody>

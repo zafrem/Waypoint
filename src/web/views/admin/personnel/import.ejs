@@ -4,7 +4,7 @@
   <p class="page-subtitle">Bulk import users from CSV or JSON</p>
 </div>
 
-${error ? `<div class="alert alert-error">${error}</div>` : ''}
+${error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
 
 ${result ? `
 <div class="card">
@@ -15,7 +15,7 @@ ${result ? `
     ${result.created.length > 0 ? `
     <div class="alert alert-success">
       <strong>Successfully imported ${result.created.length} user(s):</strong><br>
-      ${result.created.join(', ')}
+      ${esc(result.created.join(', '))}
     </div>
     ` : ''}
 
@@ -23,7 +23,7 @@ ${result ? `
     <div class="alert alert-error">
       <strong>Parse errors:</strong>
       <ul>
-        ${result.parseErrors.map(e => `<li>Line ${e.line}: ${e.message}${e.data ? ' - ' + e.data : ''}</li>`).join('')}
+        ${result.parseErrors.map(e => `<li>Line ${e.line}: ${esc(e.message)}${e.data ? ' - ' + esc(e.data) : ''}</li>`).join('')}
       </ul>
     </div>
     ` : ''}
@@ -32,7 +32,7 @@ ${result ? `
     <div class="alert alert-error">
       <strong>Creation errors:</strong>
       <ul>
-        ${result.createErrors.map(e => `<li>${e.email}: ${e.message}</li>`).join('')}
+        ${result.createErrors.map(e => `<li>${esc(e.email)}: ${esc(e.message)}</li>`).join('')}
       </ul>
     </div>
     ` : ''}

@@ -6,6 +6,7 @@ import { settingsRoutes } from './settings.js';
 import { preferencesRoutes } from './preferences.js';
 import { organizationsRoutes } from './organizations.js';
 import { usersRoutes } from './users.js';
+import { goalsRoutes } from './goals.js';
 import { adminRoutes } from './admin.js';
 
 export async function registerRoutes(server: FastifyInstance): Promise<void> {
@@ -21,6 +22,7 @@ export async function registerRoutes(server: FastifyInstance): Promise<void> {
     await protectedServer.register(preferencesRoutes);
     await protectedServer.register(organizationsRoutes);
     await protectedServer.register(usersRoutes);
+    await protectedServer.register(goalsRoutes);
     await protectedServer.register(adminRoutes);
   });
 }

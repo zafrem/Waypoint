@@ -1,5 +1,5 @@
 import { OrgRelationship } from '../models/types.js';
-import { getOrganizationById, getOrganizationPath } from '../models/organization.js';
+import { getAllDescendants, getChildOrganizations, getOrganizationById, getOrganizationPath } from '../models/organization.js';
 
 /**
  * Compute the relationship between two organizations.
@@ -94,6 +94,12 @@ export function getAccessibleOrgIds(userOrgId: string): string[] {
     orgIds.add(org.id);
   }
 
+  // Add all descendants (children, grandchildren, etc.)
+  const descendants = getAllDescendants(userOrgId);
+  for (const org of descendants) {
+    orgIds.add(org.id);
+  }
+
   // Add siblings (orgs with same parent)
   if (userOrg.parentId) {
     const siblings = getSiblingOrgIds(userOrgId);
@@ -114,9 +120,8 @@ export function getSiblingOrgIds(orgId: string): string[] {
     return [];
   }
 
-  const { getChildOrganizations } = require('../models/organization.js');
   const siblings = getChildOrganizations(org.parentId);
-  return siblings.filter((s: { id: string }) => s.id !== orgId).map((s: { id: string }) => s.id);
+  return siblings.filter((s) => s.id !== orgId).map((s) => s.id);
 }
 
 /**

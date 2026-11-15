@@ -30,10 +30,10 @@
       <tbody>
         ${users.map(u => `
         <tr>
-          <td><a href="/users/${u.id}">${u.name}</a></td>
-          <td>${u.email}</td>
-          <td><a href="/organizations/${u.orgId}">${orgMap.get(u.orgId) || 'Unknown'}</a></td>
-          <td>${u.jobFunction || '-'}</td>
+          <td><a href="/users/${u.id}">${esc(u.name)}</a></td>
+          <td>${esc(u.email)}</td>
+          <td><a href="/organizations/${u.orgId}">${esc(orgMap.get(u.orgId) || 'Unknown')}</a></td>
+          <td>${esc(u.jobFunction || '-')}</td>
           <td>
             ${u.isAdmin ? '<span class="badge badge-admin">Admin</span>' : ''}
             ${u.isLeader ? '<span class="badge badge-leader">Leader</span>' : ''}

@@ -4,8 +4,11 @@ import { setupTestDb, teardownTestDb } from './helpers.js';
 import { createWebServer } from '../web/index.js';
 import { createSession } from '../models/webSession.js';
 import { USER_IDS, ORG_IDS } from '../db/seed.js';
-import { getUserById } from '../models/user.js';
+import { getUserById, deleteUser } from '../models/user.js';
 import { getOrganizationById } from '../models/organization.js';
+import { createGoal, deleteGoal, getGoalById } from '../models/goal.js';
+import { createComment } from '../models/comment.js';
+import { exportToJson, importFromJson } from '../db/json-data.js';
 
 const cookie = (userId: string) => ({ cookie: `waypoint_session=${createSession(userId).token}` });
 const form = { 'content-type': 'application/x-www-form-urlencoded' };
@@ -101,6 +104,69 @@ test('Web UI - user and organization edit routes are admin-only', async (t) => {
     });
     assert.strictEqual(getUserById(USER_IDS.CEO)!.mcpDisabled, false);
     assert.strictEqual(getOrganizationById(ORG_IDS.ENGINEERING)!.mcpDisabled, false);
+  });
+
+  await t.test('settings modification is admin-only', async () => {
+    const resNonAdmin = await server.inject({
+      method: 'POST', url: '/settings', headers: { ...jane, ...form },
+      payload: 'key=test_key&value=test_val',
+    });
+    assert.strictEqual(resNonAdmin.statusCode, 403);
+
+    const resAdmin = await server.inject({
+      method: 'POST', url: '/settings', headers: { ...admin, ...form },
+      payload: 'key=test_key&value=test_val',
+    });
+    assert.strictEqual(resAdmin.statusCode, 302);
+  });
+
+  await t.test('admin goal edit page renders organization and owner names instead of Unknown', async () => {
+    const g = createGoal({
+      orgId: ORG_IDS.ENGINEERING,
+      ownerId: USER_IDS.VP_ENGINEERING,
+      title: 'Check Edit Labels',
+    });
+    const res = await server.inject({
+      method: 'GET', url: `/admin/goals/${g.id}/edit`, headers: admin,
+    });
+    assert.strictEqual(res.statusCode, 200);
+    assert.match(res.body, /Engineering Department/);
+    assert.match(res.body, /Sarah Chen/);
+
+    // Deleting a goal with comments succeeds without FK errors
+    createComment({ goalId: g.id, authorId: USER_IDS.JANE_SMITH, content: 'A question?' });
+    assert.strictEqual(deleteGoal(g.id), true);
+    assert.strictEqual(getGoalById(g.id), null);
+  });
+
+  await t.test('deleting a user with goals, sessions, or participations succeeds without FK errors', () => {
+    assert.strictEqual(deleteUser(USER_IDS.SMB_LEAD), true);
+    assert.strictEqual(getUserById(USER_IDS.SMB_LEAD), null);
+  });
+
+  await t.test('invalid session cookie on /auth/login clears cookie and renders login instead of redirect loop', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: '/auth/login',
+      headers: { cookie: 'waypoint_session=invalid_or_expired_token' },
+    });
+    assert.strictEqual(res.statusCode, 200);
+    assert.match(res.body, /Sign in to continue/);
+  });
+
+  await t.test('exportToJson and importFromJson preserve roles, roleId, and organization standards', () => {
+    const exported = exportToJson();
+    assert.ok(exported.data.roles && exported.data.roles.length > 0);
+    const ceoBefore = getUserById(USER_IDS.CEO)!;
+    assert.strictEqual(ceoBefore.roleId, 'role-executive');
+
+    // Re-import over existing DB (even with active web_sessions / user_preferences)
+    importFromJson(exported, { clearExisting: true, preserveTimestamps: true });
+
+    const ceoAfter = getUserById(USER_IDS.CEO)!;
+    assert.strictEqual(ceoAfter.roleId, 'role-executive');
+    const acmeAfter = getOrganizationById(ORG_IDS.ACME_CORP)!;
+    assert.ok(acmeAfter.standards && acmeAfter.standards.includes('membersrl'));
   });
 
   await server.close();

@@ -1,0 +1,129 @@
+<%- include('../layouts/main', { body: `
+<div class="page-header">
+  <h1>${esc(goal.title)}</h1>
+  <p class="page-subtitle">${esc(orgName)}${periodLabel ? ' · ' + esc(periodLabel) : ''}${ownerName ? ' · owner: ' + esc(ownerName) : ''}</p>
+</div>
+
+${success ? `<div class="alert alert-success">${esc(success)}</div>` : ''}
+${error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
+
+<div class="card">
+  <div class="card-header"><h2>Objective</h2></div>
+  <div class="card-body">
+    ${goal.description ? `<p>${esc(goal.description)}</p>` : '<p class="text-muted">No description.</p>'}
+    ${goal.keyResults ? `<h3>Key Results</h3><ul>${JSON.parse(goal.keyResults).map(kr => `<li>${esc(kr)}</li>`).join('')}</ul>` : ''}
+    ${typeof standards !== 'undefined' && standards.length > 0 ? `
+      <h3>Standards</h3>
+      <ul>
+        ${standards.map(s => `<li><span class="badge">${esc(s.type)}</span> <strong>${esc(s.name)}</strong>${s.identifier ? ` (<code>${esc(s.identifier)}</code>)` : ''}${s.content ? `: ${esc(s.content)}` : ''}</li>`).join('')}
+      </ul>
+    ` : ''}
+    <p>
+      <span class="badge">${esc(goal.status.replace('_', ' '))}</span>
+      <span class="badge">${goal.progress}%</span>
+    </p>
+  </div>
+</div>
+
+${!showPlans ? `
+<div class="card">
+  <div class="card-body">
+    <p class="text-muted">Execution plans are shared only with the people working on this goal.</p>
+  </div>
+</div>
+` : `
+<div class="card">
+  <div class="card-header"><h2>Execution plans</h2></div>
+  <div class="card-body">
+    <p class="text-muted">The leader sets the objective; the people doing the work write how they will get there. Only the people working on this goal can see these plans.</p>
+    ${participants.length === 0 ? '<p class="text-muted">Nobody is working on this goal yet.</p>' : participants.map(p => `
+      <div class="card" style="margin-bottom: 12px;">
+        <div class="card-body">
+          <h3 style="margin-top: 0;">${esc(p.name)} <span class="badge">${esc(p.role)}</span>
+            ${canManage && p.userId !== goal.ownerId ? `
+              <form action="/goals/${goal.id}/participants/${p.userId}/remove" method="POST" style="display:inline" onsubmit="return confirm('Remove this person from the goal?')">
+                <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+              </form>` : ''}
+          </h3>
+          ${p.userId === user.id ? `
+            <form action="/goals/${goal.id}/plan" method="POST">
+              <div class="form-group">
+                <label for="plan">Your plan</label>
+                <textarea id="plan" name="plan" rows="6" placeholder="What will you do, and how do you read the key results?">${esc(p.plan || '')}</textarea>
+                ${p.planUpdatedAt ? `<span class="form-help">Last updated ${esc(p.planUpdatedAt)}</span>` : ''}
+              </div>
+              <button type="submit" class="btn btn-primary">Save plan</button>
+            </form>
+          ` : (p.plan ? `<p style="white-space: pre-wrap;">${esc(p.plan)}</p>
+              ${p.planUpdatedAt ? `<span class="form-help">Last updated ${esc(p.planUpdatedAt)}</span>` : ''}`
+              : '<p class="text-muted">No plan written yet.</p>')}
+          ${canDiscuss && p.userId !== user.id ? `
+            <form action="/goals/${goal.id}/gray-areas" method="POST" style="margin-top: 10px;">
+              <input type="hidden" name="planUserId" value="${p.userId}">
+              <div class="form-group">
+                <input type="text" name="content" placeholder="Something unclear in this plan?" required>
+              </div>
+              <button type="submit" class="btn btn-sm btn-secondary">Flag as gray area</button>
+            </form>` : ''}
+        </div>
+      </div>
+    `).join('')}
+
+    ${canManage ? `
+    <form action="/goals/${goal.id}/participants" method="POST" class="form-row">
+      <div class="form-group">
+        <label for="userId">Add a person</label>
+        <select id="userId" name="userId" required>
+          <option value="">Select person...</option>
+          ${people.filter(u => !participants.some(p => p.userId === u.id)).map(u => `<option value="${u.id}">${esc(u.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role" name="role">${roles.map(r => `<option value="${r}">${esc(r)}</option>`).join('')}</select>
+      </div>
+      <div class="form-group"><label>&nbsp;</label><button type="submit" class="btn btn-primary">Add</button></div>
+    </form>` : ''}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Gray areas (${grayAreas.filter(g => g.status === 'open').length} open)</h2></div>
+  <div class="card-body">
+    <p class="text-muted">Unclear points, raised and cleared up together by the people working on this goal.</p>
+    ${grayAreas.length === 0 ? '<p class="text-muted">None so far.</p>' : grayAreas.map(g => `
+      <div class="card" style="margin-bottom: 12px;">
+        <div class="card-body">
+          <p style="margin-top: 0;">
+            <span class="badge ${g.status === 'open' ? 'badge-warning' : 'badge-success'}">${esc(g.status)}</span>
+            <strong>${g.planUserId ? esc((names.get(g.planUserId) || 'Unknown') + "'s plan") : 'The goal'}</strong>
+            · raised by ${esc(names.get(g.authorId) || 'Unknown')}
+          </p>
+          <p style="white-space: pre-wrap;">${esc(g.content)}</p>
+          ${g.status === 'resolved' ? `<p><strong>Clarified${g.resolvedBy ? ' by ' + esc(names.get(g.resolvedBy) || 'Unknown') : ''}:</strong> <span style="white-space: pre-wrap;">${esc(g.resolution)}</span></p>` : (canDiscuss ? `
+            <form action="/goals/${goal.id}/gray-areas/${g.id}/resolve" method="POST">
+              <div class="form-group">
+                <input type="text" name="resolution" placeholder="How was this clarified?" required>
+              </div>
+              <button type="submit" class="btn btn-sm btn-primary">Mark resolved</button>
+            </form>` : '')}
+        </div>
+      </div>
+    `).join('')}
+
+    ${canDiscuss ? `
+    <form action="/goals/${goal.id}/gray-areas" method="POST">
+      <div class="form-group">
+        <label for="content">Raise a gray area about the goal itself</label>
+        <input type="text" id="content" name="content" placeholder="What is unclear or ambiguous?" required>
+      </div>
+      <button type="submit" class="btn btn-secondary">Raise</button>
+    </form>` : ''}
+  </div>
+</div>
+`}
+
+<div class="page-actions">
+  <a href="/organizations/${goal.orgId}" class="btn btn-secondary">Back to ${esc(orgName)}</a>
+</div>
+` }) %>

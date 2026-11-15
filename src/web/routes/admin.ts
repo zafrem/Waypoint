@@ -18,9 +18,18 @@ import {
   updateGoal,
   deleteGoal,
   parseStandardsText,
+  periodLabel,
 } from '../../models/goal.js';
+import { Goal, GoalPeriodType } from '../../models/types.js';
 import { parseCSV, parseJSON, detectFormat, ImportResult } from '../services/personnelImport.js';
 import { exportPersonnelToCSV, exportPersonnelToJSON } from '../services/personnelExport.js';
+
+/** Annual goals a quarterly goal can be linked to, newest year first. */
+function getAnnualGoals(): Goal[] {
+  return getAllGoals()
+    .filter((g) => g.periodType === 'annual')
+    .sort((x, y) => (y.period ?? '').localeCompare(x.period ?? '') || x.title.localeCompare(y.title));
+}
 
 export async function adminRoutes(server: FastifyInstance): Promise<void> {
   // Apply admin middleware to all routes in this plugin
@@ -359,9 +368,9 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
 
   // Goals List
   server.get<{
-    Querystring: { orgId?: string };
+    Querystring: { orgId?: string; period?: string };
   }>('/admin/goals', async (request, reply) => {
-    const { orgId } = request.query;
+    const { orgId, period } = request.query;
     const goals = getAllGoals();
     const organizations = getAllOrganizations();
     const users = getAllUsers();
@@ -369,7 +378,11 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
     const orgMap = new Map(organizations.map((org) => [org.id, org.name]));
     const userMap = new Map(users.map((u) => [u.id, u.name]));
 
-    const filteredGoals = orgId ? goals.filter((g) => g.orgId === orgId) : goals;
+    const periods = [...new Set(goals.map((g) => g.period).filter((p): p is string => !!p))].sort().reverse();
+    const goalById = new Map(goals.map((g) => [g.id, g]));
+    const filteredGoals = goals
+      .filter((g) => !orgId || g.orgId === orgId)
+      .filter((g) => !period || (period === 'none' ? !g.period : g.period === period));
 
     return reply.view('admin/goals/index.ejs', {
       title: 'Goals Management - Waypoint',
@@ -380,6 +393,10 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       orgMap,
       userMap,
       selectedOrgId: orgId || '',
+      selectedPeriod: period || '',
+      periods,
+      goalById,
+      periodLabel,
     });
   });
 
@@ -395,6 +412,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       goal: null,
       organizations,
       users,
+      annualGoals: getAnnualGoals(),
       error: null,
       success: null,
     });
@@ -412,9 +430,12 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       visibility?: string;
       keyResults?: string;
       standards?: string;
+      periodType?: string;
+      period?: string;
+      parentGoalId?: string;
     };
   }>('/admin/goals', async (request, reply) => {
-    const { title, description, orgId, ownerId, status, progress, visibility, keyResults, standards } =
+    const { title, description, orgId, ownerId, status, progress, visibility, keyResults, standards, periodType, period, parentGoalId } =
       request.body;
 
     const organizations = getAllOrganizations();
@@ -428,6 +449,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         goal: null,
         organizations,
         users,
+        annualGoals: getAnnualGoals(),
         error: 'Title and organization are required.',
         success: null,
       });
@@ -450,6 +472,9 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         visibility: (visibility as 'public' | 'private' | 'team_only') || 'public',
         keyResults: keyResultsArray?.length ? keyResultsArray : null,
         standards: standardsArray,
+        periodType: (periodType as GoalPeriodType) || null,
+        period: period || null,
+        parentGoalId: parentGoalId || null,
       });
 
       return reply.redirect(`/admin/goals/${newGoal.id}/edit?success=Goal created successfully`);
@@ -462,6 +487,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         goal: null,
         organizations,
         users,
+        annualGoals: getAnnualGoals(),
         error: message,
         success: null,
       });
@@ -495,6 +521,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       goal,
       organizations,
       users,
+      annualGoals: getAnnualGoals(),
       error: null,
       success: success || null,
     });
@@ -511,10 +538,14 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       visibility?: string;
       keyResults?: string;
       standards?: string;
+      periodType?: string;
+      period?: string;
+      parentGoalId?: string;
     };
   }>('/admin/goals/:id', async (request, reply) => {
     const { id } = request.params;
-    const { title, description, status, progress, visibility, keyResults, standards } = request.body;
+    const { title, description, status, progress, visibility, keyResults, standards, periodType, period, parentGoalId } =
+      request.body;
 
     const goal = getGoalById(id);
     if (!goal) {
@@ -540,6 +571,9 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         visibility: visibility as 'public' | 'private' | 'team_only',
         keyResults: keyResultsArray?.length ? keyResultsArray : null,
         standards: standardsArray,
+        periodType: (periodType as GoalPeriodType) || null,
+        period: period || null,
+        parentGoalId: parentGoalId || null,
       });
 
       return reply.redirect(`/admin/goals/${id}/edit?success=Goal updated successfully`);
@@ -555,6 +589,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         goal,
         organizations,
         users,
+        annualGoals: getAnnualGoals(),
         error: message,
         success: null,
       });

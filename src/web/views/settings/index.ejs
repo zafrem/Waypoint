@@ -39,22 +39,22 @@
           <th>Value</th>
           <th>Type</th>
           <th>Description</th>
-          <th>Actions</th>
+          ${user && user.isAdmin ? '<th>Actions</th>' : ''}
         </tr>
       </thead>
       <tbody>
         ${settings.map(setting => `
         <tr>
-          <td><code>${setting.key}</code></td>
-          <td><code>${setting.value}</code></td>
-          <td><span class="badge">${setting.type}</span></td>
-          <td>${setting.description || '-'}</td>
-          <td>
+          <td><code>${esc(setting.key)}</code></td>
+          <td><code>${esc(setting.value)}</code></td>
+          <td><span class="badge">${esc(setting.type)}</span></td>
+          <td>${esc(setting.description || '-')}</td>
+          ${user && user.isAdmin ? `<td>
             <form action="/settings/delete" method="POST" style="display: inline;">
-              <input type="hidden" name="key" value="${setting.key}">
+              <input type="hidden" name="key" value="${esc(setting.key)}">
               <button type="submit" class="btn btn-sm btn-danger">Delete</button>
             </form>
-          </td>
+          </td>` : ''}
         </tr>
         `).join('')}
       </tbody>
@@ -63,6 +63,7 @@
   </div>
 </div>
 
+${user && user.isAdmin ? `
 <div class="card">
   <div class="card-header">
     <h2>Add New Setting</h2>
@@ -98,4 +99,5 @@
     </form>
   </div>
 </div>
+` : ''}
 ` }) %>

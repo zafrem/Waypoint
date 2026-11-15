@@ -6,6 +6,7 @@ import { getGoalById } from '../../models/goal.js';
 import { createComment } from '../../models/comment.js';
 import { computeRelationship } from '../../rbac/relationships.js';
 import { hasPermission } from '../../rbac/permissions.js';
+import { canViewGoal } from '../../services/planAccess.js';
 
 export const submitQuestionSchema = z.object({
   goal_id: z.string().describe('The ID of the goal to submit a question about'),
@@ -51,7 +52,7 @@ export function submitQuestion(input: SubmitQuestionInput): SubmitQuestionResult
   }
 
   const goal = getGoalById(input.goal_id);
-  if (!goal) {
+  if (!goal || !canViewGoal(user, goal)) {
     return {
       success: false,
       error: `Goal with ID "${input.goal_id}" not found.`,

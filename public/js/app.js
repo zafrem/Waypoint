@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 5000);
   });
 
-  // Form confirmation for delete actions
-  const deleteForms = document.querySelectorAll('form[action*="delete"]');
+  // Form confirmation for delete actions (skip forms that already have an inline onsubmit handler)
+  const deleteForms = document.querySelectorAll('form[action*="delete"]:not([onsubmit])');
   deleteForms.forEach(function(form) {
     form.addEventListener('submit', function(e) {
       if (!confirm('Are you sure you want to delete this item?')) {
@@ -49,17 +49,20 @@ document.addEventListener('DOMContentLoaded', function() {
   const error = urlParams.get('error');
 
   if (success || error) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert ' + (success ? 'alert-success' : 'alert-error');
-    alertDiv.textContent = success || error;
+    // Only insert an alert banner if the server did not already render one
+    if (!document.querySelector('.alert')) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'alert ' + (success ? 'alert-success' : 'alert-error');
+      alertDiv.textContent = success || error;
 
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
-      const pageHeader = mainContent.querySelector('.page-header');
-      if (pageHeader) {
-        pageHeader.insertAdjacentElement('afterend', alertDiv);
-      } else {
-        mainContent.insertBefore(alertDiv, mainContent.firstChild);
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) {
+        const pageHeader = mainContent.querySelector('.page-header');
+        if (pageHeader) {
+          pageHeader.insertAdjacentElement('afterend', alertDiv);
+        } else {
+          mainContent.insertBefore(alertDiv, mainContent.firstChild);
+        }
       }
     }
 

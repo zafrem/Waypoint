@@ -132,6 +132,45 @@ The web UI for managing organizations, users, goals and settings (shown with the
 | `search_collaborator_goals` | Search goals across accessible organizations |
 | `submit_question` | Submit a question about a goal from another team |
 | `semantic_search` | Search goals across the organization for a topic, limited by your role and goal visibility (requires the `vector:search` permission) |
+| `get_goal_plans` | Everyone's execution plans and the gray areas for a goal you work on |
+| `update_my_plan` | Write or update your own execution plan for a goal you work on |
+| `raise_gray_area` | Flag something unclear in a goal or a teammate's plan |
+| `resolve_gray_area` | Record how a gray area was clarified |
+| `lookup_standards` | Look up standard term definitions, variable/metadata field names (e.g. `membersrl`), and common functions |
+
+## Terminology and Coding Standards
+
+Organizations and goals can define shared **terminology, standard variable/metadata field names, and common functions** so every team and AI assistant follows the exact same conventions:
+
+- Enter one standard per line on an organization's edit page (`/organizations/<id>/edit`) or a goal's edit page (`/admin/goals/<id>/edit`):
+  - `type | name | identifier | description` (or `type | name | description`)
+  - Supported types: `term`, `variable`, `metadata`, `function`, `document`, `ui_element`, `template`.
+  - Example:
+    ```text
+    term | Member Serial | membersrl | Unique identifier for a customer, consisting of 8 to 16 digits.
+    function | Validate Member Serial | isValidMemberSrl(membersrl) | Returns true if membersrl is an 8-16 digit string.
+    ```
+- **Inherited down the hierarchy:** Standards defined on a parent organization (such as `Acme Corp`) or parent goals automatically flow into every child team's `waypoint://context/current_user` context and can be queried via the `lookup_standards` MCP tool.
+
+## Quarterly and Annual Goals
+
+A goal can be tagged with a period, so annual and quarterly OKRs live side by side:
+
+- **Annual** goals use a year as the period (`2026`). **Quarterly** goals use `2026-Q3`.
+- A quarterly goal can optionally support an annual goal ("Supports annual goal: ..."). Leave it empty for quarterly work that does not map to an annual goal.
+- Goals with no period are ongoing and always shown.
+- By default the MCP context and tools only include the **current year's and current quarter's** goals (plus any annual goal a current quarterly goal supports), so past quarters do not crowd the context. `get_parent_goals` and `search_collaborator_goals` accept `include_past_periods: true` to look further back.
+
+Set the period in the admin UI under **Goals** (create or edit); the goals list can be filtered by period.
+
+## Execution Plans and Gray Areas
+
+Leaders define only the **objective** (title, description, key results). The people doing the work write the **execution plans**:
+
+- A goal has **participants**, each with a role (`driver`, `contributor` or `reviewer`). The goal owner is a driver automatically. The owner or an admin adds and removes participants on the goal page (`/goals/<id>`).
+- Each participant writes **their own plan** for the goal, on the goal page or with `update_my_plan`. Nobody edits someone else's plan.
+- Anyone working on the goal can flag a **gray area**: something unclear in the goal or in a teammate's plan. Anyone on the goal can mark it resolved with a note on how it was clarified, so ambiguities are cleared up together rather than guessed at.
+- **Plans are visible only to the people working on that goal** (plus admins). To everyone else the goal shows just the objective, and the MCP tools answer "not found" exactly as they would for a goal that does not exist. For goals you work on, the `current_user` context includes your plan, your teammates' plans and the open gray areas.
 
 ## Disabling MCP Access
 

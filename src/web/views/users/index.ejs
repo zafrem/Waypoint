@@ -20,10 +20,10 @@
       <tbody>
         ${users.map(u => `
         <tr>
-          <td><a href="/users/${u.id}">${u.name}</a> ${mcpStatus.get(u.id) && mcpStatus.get(u.id).disabled ? `<span class="badge badge-warning">MCP off${mcpStatus.get(u.id).source === 'inherited' ? ' (inherited)' : ''}</span>` : ''}</td>
-          <td>${u.email}</td>
-          <td><a href="/organizations/${u.orgId}">${orgMap.get(u.orgId) || 'Unknown'}</a></td>
-          <td><span class="badge">${roleMap.get(u.roleId) || 'No Role'}</span></td>
+          <td><a href="/users/${u.id}">${esc(u.name)}</a> ${mcpStatus.get(u.id) && mcpStatus.get(u.id).disabled ? `<span class="badge badge-warning">MCP off${mcpStatus.get(u.id).source === 'inherited' ? ' (inherited)' : ''}</span>` : ''}</td>
+          <td>${esc(u.email)}</td>
+          <td><a href="/organizations/${u.orgId}">${esc(orgMap.get(u.orgId) || 'Unknown')}</a></td>
+          <td><span class="badge">${esc(roleMap.get(u.roleId) || 'No Role')}</span></td>
           <td>
             <a href="/users/${u.id}" class="btn btn-sm btn-secondary">View</a>
             ${user && user.isAdmin ? `<a href="/users/${u.id}/edit" class="btn btn-sm btn-primary">Edit</a>` : ''}
