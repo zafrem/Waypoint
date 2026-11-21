@@ -32,6 +32,23 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
 
   server.get<{
     Params: { id: string };
+  }>('/organizations/:id/standards.yaml', async (request, reply) => {
+    const organization = getOrganizationById(request.params.id);
+    if (!organization) {
+      return reply.status(404).view('layouts/error.ejs', {
+        title: 'Not Found - Waypoint',
+        user: request.user,
+        message: 'Organization not found',
+      });
+    }
+    return reply
+      .header('content-type', 'text/yaml; charset=utf-8')
+      .header('content-disposition', `attachment; filename="${organization.id}-standards.yaml"`)
+      .send(formatStandardsText(organization.standards));
+  });
+
+  server.get<{
+    Params: { id: string };
   }>('/organizations/:id/skill', async (request, reply) => {
     const skill = buildStandardsSkill(request.params.id, request.user);
     if (!skill) {

@@ -169,6 +169,38 @@ test('Web UI - user and organization edit routes are admin-only', async (t) => {
     assert.ok(acmeAfter.standards && acmeAfter.standards.includes('membersrl'));
   });
 
+  // Runs last: importing clears every session.
+  await t.test('data export/import is admin-only and round-trips through the UI routes', async () => {
+    assert.strictEqual((await server.inject({ method: 'GET', url: '/settings/export', headers: cookie(USER_IDS.JANE_SMITH) })).statusCode, 403);
+    assert.strictEqual(
+      (await server.inject({ method: 'POST', url: '/settings/import', headers: { ...cookie(USER_IDS.JANE_SMITH), 'content-type': 'application/json' }, payload: '{}' })).statusCode,
+      403
+    );
+
+    const exp = await server.inject({ method: 'GET', url: '/settings/export', headers: cookie(USER_IDS.ADMIN) });
+    assert.strictEqual(exp.statusCode, 200);
+    assert.match(String(exp.headers['content-disposition']), /attachment; filename="waypoint-data-/);
+    const data = JSON.parse(exp.body);
+    assert.ok(data.data.organizations.length > 0);
+
+    const json = { 'content-type': 'application/json' };
+    const bad = await server.inject({ method: 'POST', url: '/settings/import', headers: { ...cookie(USER_IDS.ADMIN), ...json }, payload: '{"nope":1}' });
+    assert.strictEqual(bad.statusCode, 400);
+
+    const noAdmin = { ...data, data: { ...data.data, users: data.data.users.map((u: { isAdmin: boolean }) => ({ ...u, isAdmin: false })) } };
+    const locked = await server.inject({ method: 'POST', url: '/settings/import', headers: { ...cookie(USER_IDS.ADMIN), ...json }, payload: JSON.stringify(noAdmin) });
+    assert.strictEqual(locked.statusCode, 400);
+    assert.match(locked.json().error, /no admin/);
+
+    const ok = await server.inject({ method: 'POST', url: '/settings/import', headers: { ...cookie(USER_IDS.ADMIN), ...json }, payload: exp.body });
+    assert.strictEqual(ok.statusCode, 200);
+    assert.ok(getOrganizationById(ORG_IDS.ENGINEERING));
+
+    const yaml = await server.inject({ method: 'GET', url: `/organizations/${ORG_IDS.ENGINEERING}/standards.yaml`, headers: cookie(USER_IDS.ADMIN) });
+    assert.strictEqual(yaml.statusCode, 200);
+    assert.match(String(yaml.headers['content-type']), /text\/yaml/);
+  });
+
   await server.close();
   teardownTestDb();
 });

@@ -66,6 +66,37 @@
 ${user && user.isAdmin ? `
 <div class="card">
   <div class="card-header">
+    <h2>Save &amp; Share Data</h2>
+  </div>
+  <div class="card-body">
+    <p>Download everything (organizations, users, goals, plans, standards, roles) as one JSON file to back it up or share it with another Waypoint instance.</p>
+    <p><a href="/settings/export" class="btn btn-primary">Export Data (JSON)</a></p>
+    <hr>
+    <p><strong>Import</strong> replaces <em>all</em> current data and signs everyone out. The file must contain an admin user.</p>
+    <input type="file" id="import-file" accept="application/json,.json">
+    <button type="button" class="btn btn-danger" id="import-btn">Import Data</button>
+    <p id="import-msg" class="text-muted"></p>
+  </div>
+</div>
+<script>
+document.getElementById('import-btn').addEventListener('click', async () => {
+  const file = document.getElementById('import-file').files[0];
+  const msg = document.getElementById('import-msg');
+  if (!file) { msg.textContent = 'Choose a file first.'; return; }
+  if (!confirm('This replaces ALL existing data. Continue?')) return;
+  try {
+    const res = await fetch('/settings/import', { method: 'POST', headers: { 'content-type': 'application/json' }, body: await file.text() });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) { msg.textContent = 'Import failed: ' + (out.error || res.status); return; }
+    window.location.href = '/auth/login';
+  } catch (e) { msg.textContent = 'Import failed: ' + e.message; }
+});
+</script>
+` : ''}
+
+${user && user.isAdmin ? `
+<div class="card">
+  <div class="card-header">
     <h2>Add New Setting</h2>
   </div>
   <div class="card-body">

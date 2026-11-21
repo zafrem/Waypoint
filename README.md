@@ -166,6 +166,10 @@ The same vocabulary can be exported as a [Claude Code skill](https://docs.claude
 
 Standards are inherited from the organization's parents plus its current goals, so a team's skill includes company-wide terms.
 
+### Saving, loading, and sharing data
+
+Admins can use **Settings → Save & Share Data** to download all data as one JSON file (`/settings/export`) or upload such a file to restore it (`/settings/import`). Import replaces all current data, signs everyone out, and is rejected if the file has no admin user. The CLI equivalents are `npm run export` and `npm run import`. To share only an organization's terminology, use **Export YAML** (Fideslang YAML, pasteable into another instance's organization edit page) or **Download Skill** on its page.
+
 ## Quarterly and Annual Goals
 
 A goal can be tagged with a period, so annual and quarterly OKRs live side by side:
