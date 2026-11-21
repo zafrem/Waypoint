@@ -56,7 +56,7 @@ export WAYPOINT_SESSION_SECRET=$(openssl rand -hex 32)
 docker compose up -d
 ```
 
-The image is `zafrem/waypoint` (built by the release workflow on each `v*` tag); data lives in the `waypoint-data` volume. The initial admin is created on first start from `WAYPOINT_ADMIN_EMAIL`. The container runs the web UI only. To attach an MCP client to it, run the stdio server inside the container:
+The image is [`zafrem/waypoint`](https://hub.docker.com/r/zafrem/waypoint) (built by the release workflow on each `v*` tag); data lives in the `waypoint-data` volume. The initial admin is created on first start from `WAYPOINT_ADMIN_EMAIL`. The container runs the web UI only. To attach an MCP client to it, run the stdio server inside the container:
 
 ```json
 {

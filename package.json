@@ -1,6 +1,6 @@
 {
   "name": "waypoint",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "MCP server that provides organizational goal context to AI assistants",
   "type": "module",
   "main": "dist/index.js",
@@ -23,10 +23,17 @@
   ],
   "license": "MIT",
   "author": "zafrem",
-  "repository": { "type": "git", "url": "git+https://github.com/zafrem/Waypoint.git" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zafrem/Waypoint.git"
+  },
   "homepage": "https://github.com/zafrem/Waypoint#readme",
-  "bugs": { "url": "https://github.com/zafrem/Waypoint/issues" },
-  "engines": { "node": ">=20" },
+  "bugs": {
+    "url": "https://github.com/zafrem/Waypoint/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@fastify/cookie": "^11.0.0",
     "@fastify/formbody": "^8.0.0",
