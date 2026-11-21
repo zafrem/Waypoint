@@ -238,7 +238,7 @@ function createOrganizations(): void {
   });
 }
 
-function createRoles(): void {
+export function createRoles(): void {
   createRole({
     id: ROLE_IDS.EXECUTIVE,
     name: 'Executive',

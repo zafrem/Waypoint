@@ -27,22 +27,54 @@ These answers are illustrative: they are written by hand to show how the context
 
 ## Installation
 
+Source and releases: **https://github.com/zafrem/Waypoint** (Node.js 20+ required for a source install).
+
+### Option A: from source
+
 ```bash
-# Clone the repository
-git clone https://github.com/zafrem/Waypoint.git
+git clone https://github.com/zafrem/Waypoint.git   # or download a release from /releases
 cd Waypoint
-
-# Install dependencies
-npm install
-
-# Build the project
+npm install            # required first: the build needs the TypeScript compiler
 npm run build
 
-# Seed the database with example data
-npm run seed
+# Create the first admin (and your root organization) on an empty database
+npm run init -- --email you@example.com --name "Your Name" --org "Your Company"
+
+WAYPOINT_USER_ID=<admin user id printed by init> npm start
 ```
 
-> **Run `npm install` first.** The build needs the TypeScript compiler (`tsc`), which is installed as a dev dependency. Without it, `npm run build` fails with `sh: tsc: command not found`. Run `npm install` again after pulling changes that touch `package.json`.
+Open http://localhost:3000 and log in with the admin email. Add organizations, users and goals from the admin pages. `npm run init` only works on an empty database, so it cannot be used to add an admin later.
+
+> `npm run seed` loads the **Acme Corp demo data** (including `admin@acme.com`) and **wipes the database**. Use it to try Waypoint out, never on a real instance.
+
+### Option B: Docker
+
+```bash
+curl -O https://raw.githubusercontent.com/zafrem/Waypoint/main/docker-compose.yml
+export WAYPOINT_ADMIN_EMAIL=you@example.com
+export WAYPOINT_SESSION_SECRET=$(openssl rand -hex 32)
+docker compose up -d
+```
+
+The image is `zafrem/waypoint` (built by the release workflow on each `v*` tag); data lives in the `waypoint-data` volume. The initial admin is created on first start from `WAYPOINT_ADMIN_EMAIL`. The container runs the web UI only. To attach an MCP client to it, run the stdio server inside the container:
+
+```json
+{
+  "mcpServers": {
+    "waypoint": {
+      "command": "docker",
+      "args": ["exec", "-i", "-e", "WAYPOINT_MCP_ENABLED=true", "-e", "WAYPOINT_WEB_ENABLED=false",
+               "-e", "WAYPOINT_USER_ID=<user id>", "waypoint", "node", "dist/index.js"]
+    }
+  }
+}
+```
+
+### Security notes
+
+- **Login is by email only (no password).** Anyone who can reach the web UI and knows an email can sign in as that user. That is why the UI listens on `127.0.0.1` by default (`WAYPOINT_WEB_HOST`; the Docker image uses `0.0.0.0`). Only expose it behind a VPN, a trusted network or an authenticating reverse proxy.
+- Set `WAYPOINT_SESSION_SECRET` to a long random value.
+- Exports (`/settings/export`) contain all data; treat them as sensitive.
 
 ## Configuration
 
@@ -54,7 +86,17 @@ WAYPOINT_USER_ID=user-jane-smith
 
 # Database file path (optional, defaults to ./waypoint.db)
 WAYPOINT_DB_PATH=./waypoint.db
+
+# First run only: create the initial admin when the database has no users
+WAYPOINT_ADMIN_EMAIL=you@example.com
+
+# Web UI host/port (defaults 127.0.0.1 / 3000), session secret, and MCP on/off
+WAYPOINT_WEB_HOST=127.0.0.1
+WAYPOINT_SESSION_SECRET=<long random string>
+WAYPOINT_MCP_ENABLED=true
 ```
+
+See `.env.example` for every variable.
 
 ## Usage
 

@@ -162,9 +162,6 @@ waypoint-data.json
 # General Build Output
 dist/
 build/
-<<<<<<< HEAD
 
 # Claude Code
 CLAUDE.md
-=======
->>>>>>> b4f15bbe673f772589e450dea9576bdec92e75d2

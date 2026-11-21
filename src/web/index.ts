@@ -64,8 +64,8 @@ export async function startWebServer(): Promise<void> {
 
   try {
     const server = await createWebServer();
-    await server.listen({ port: config.webPort, host: '0.0.0.0' });
-    console.error(`Web UI available at http://localhost:${config.webPort}`);
+    await server.listen({ port: config.webPort, host: config.webHost });
+    console.error(`Web UI available at http://${config.webHost === '0.0.0.0' ? 'localhost' : config.webHost}:${config.webPort}`);
   } catch (error) {
     console.error('Failed to start web server:', error);
     throw error;

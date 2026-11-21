@@ -1,0 +1,17 @@
+services:
+  waypoint:
+    image: zafrem/waypoint:latest
+    # build: .          # uncomment to build from a local clone instead
+    container_name: waypoint
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      WAYPOINT_ADMIN_EMAIL: ${WAYPOINT_ADMIN_EMAIL:?set the initial admin email}
+      WAYPOINT_ADMIN_NAME: ${WAYPOINT_ADMIN_NAME:-Administrator}
+      WAYPOINT_ORG_NAME: ${WAYPOINT_ORG_NAME:-My Organization}
+      WAYPOINT_SESSION_SECRET: ${WAYPOINT_SESSION_SECRET:?set a long random secret}
+    volumes:
+      - waypoint-data:/data
+volumes:
+  waypoint-data:
