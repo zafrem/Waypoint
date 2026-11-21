@@ -142,15 +142,29 @@ The web UI for managing organizations, users, goals and settings (shown with the
 
 Organizations and goals can define shared **terminology, standard variable/metadata field names, and common functions** so every team and AI assistant follows the exact same conventions:
 
-- Enter one standard per line on an organization's edit page (`/organizations/<id>/edit`) or a goal's edit page (`/admin/goals/<id>/edit`):
-  - `type | name | identifier | description` (or `type | name | description`)
+- Enter standards as YAML in the [Fideslang](https://ethyca.github.io/fideslang/) style: a top-level key per type, each holding a list of entries with `fides_key` (the identifier), `name`, `description`, and an optional `parent_key`:
   - Supported types: `term`, `variable`, `metadata`, `function`, `document`, `ui_element`, `template`.
   - Example:
-    ```text
-    term | Member Serial | membersrl | Unique identifier for a customer, consisting of 8 to 16 digits.
-    function | Validate Member Serial | isValidMemberSrl(membersrl) | Returns true if membersrl is an 8-16 digit string.
+    ```yaml
+    term:
+      - fides_key: membersrl
+        name: Member Serial
+        description: Unique identifier for a customer, consisting of 8 to 16 digits.
+    function:
+      - fides_key: isValidMemberSrl(membersrl)
+        name: Validate Member Serial
+        description: Returns true if membersrl is an 8-16 digit string.
     ```
 - **Inherited down the hierarchy:** Standards defined on a parent organization (such as `Acme Corp`) or parent goals automatically flow into every child team's `waypoint://context/current_user` context and can be queried via the `lookup_standards` MCP tool.
+
+### Use as a skill (no MCP needed)
+
+The same vocabulary can be exported as a [Claude Code skill](https://docs.claude.com/en/docs/claude-code/skills) (`SKILL.md`: a glossary plus the Fideslang YAML source), so assistants load it without the MCP server:
+
+- Web: **Download Skill** on an organization's page (`/organizations/<id>/skill`).
+- CLI: `npm run export:skill -- "<organization name or id>" [skills dir]` writes `.claude/skills/<org>-terminology/SKILL.md`.
+
+Standards are inherited from the organization's parents plus its current goals, so a team's skill includes company-wide terms.
 
 ## Quarterly and Annual Goals
 

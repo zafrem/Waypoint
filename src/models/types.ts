@@ -60,6 +60,8 @@ export interface Standard {
   /** Standard identifier, variable/metadata field name, or function signature (e.g., `membersrl`). */
   identifier?: string | null;
   content: string;
+  /** Fideslang `parent_key`: the fides_key of the broader standard this one refines. */
+  parentKey?: string | null;
 }
 
 export interface Role {

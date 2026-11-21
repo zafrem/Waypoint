@@ -118,7 +118,7 @@ ${error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
 
       <div class="form-group">
         <label for="standards">Standards</label>
-        <textarea id="standards" name="standards" rows="5" placeholder="term | Member Serial | membersrl | Unique identifier for a customer, consisting of 8 to 16 digits.&#10;template | PR template | Summary, test plan, risks">${goal && goal.standards ? esc(JSON.parse(goal.standards).map(s => s.identifier ? (s.type + ' | ' + s.name + ' | ' + s.identifier + ' | ' + s.content) : (s.type + ' | ' + s.name + ' | ' + s.content)).join('\n')) : ''}</textarea>
+        <textarea id="standards" name="standards" rows="5" placeholder="term:&#10;  - fides_key: membersrl&#10;    name: Member Serial&#10;    description: Unique identifier for a customer, consisting of 8 to 16 digits.&#10;function:&#10;  - fides_key: isValidMemberSrl(membersrl)&#10;    name: Validate Member Serial&#10;    description: Returns true if membersrl is an 8-16 digit string.">${esc(typeof standardsText !== 'undefined' ? standardsText : '')}</textarea>
         <span class="form-help">One per line: <code>type | name | identifier | content</code> (or <code>type | name | content</code>), where type is term, variable, metadata, function, document, ui_element or template. Child teams inherit these.</span>
       </div>
 

@@ -13,6 +13,7 @@ import {
 } from '../../models/goal.js';
 import { getOrganizationMcpStatus } from '../../services/mcpAccess.js';
 import { canViewGoal } from '../../services/planAccess.js';
+import { buildStandardsSkill } from '../../services/standardsSkill.js';
 import { adminMiddleware } from '../middleware/admin.js';
 
 export async function organizationsRoutes(server: FastifyInstance): Promise<void> {
@@ -27,6 +28,23 @@ export async function organizationsRoutes(server: FastifyInstance): Promise<void
       organizations,
       mcpStatus,
     });
+  });
+
+  server.get<{
+    Params: { id: string };
+  }>('/organizations/:id/skill', async (request, reply) => {
+    const skill = buildStandardsSkill(request.params.id, request.user);
+    if (!skill) {
+      return reply.status(404).view('layouts/error.ejs', {
+        title: 'Not Found - Waypoint',
+        user: request.user,
+        message: 'Organization not found',
+      });
+    }
+    return reply
+      .header('content-type', 'text/markdown; charset=utf-8')
+      .header('content-disposition', `attachment; filename="${skill.name}-SKILL.md"`)
+      .send(skill.content);
   });
 
   server.get<{

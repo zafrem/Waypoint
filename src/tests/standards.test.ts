@@ -11,6 +11,7 @@ import { lookupStandards } from '../mcp/tools/lookupStandards.js';
 import { searchCollaboratorGoals } from '../mcp/tools/searchCollaboratorGoals.js';
 import { semanticSearch } from '../mcp/tools/semanticSearch.js';
 import { submitQuestion } from '../mcp/tools/submitQuestion.js';
+import { buildStandardsSkill } from '../services/standardsSkill.js';
 import { createWebServer } from '../web/index.js';
 import { createSession } from '../models/webSession.js';
 
@@ -21,12 +22,21 @@ const body = (fields: Record<string, string>) => new URLSearchParams(fields).toS
 test('Terminology & Coding Standards - parsing, inheritance, MCP tool, and Web UI', async (t) => {
   setupTestDb();
 
-  await t.test('parseStandardsText supports both 3-column and 4-column (with identifier) formats', () => {
+  await t.test('parseStandardsText reads Fideslang-style YAML and formatStandardsText round-trips it', () => {
     const parsed = parseStandardsText(
       [
-        'term | Member Serial | membersrl | Unique identifier for a customer, consisting of 8 to 16 digits.',
-        'function | Validate Member Serial | isValidMemberSrl(membersrl) | Returns true if membersrl is 8-16 digits.',
-        'template | PR template | Summary, test plan, risks',
+        'term:',
+        '  - fides_key: membersrl',
+        '    name: Member Serial',
+        '    description: Unique identifier for a customer, consisting of 8 to 16 digits.',
+        'function:',
+        '  - fides_key: isValidMemberSrl(membersrl)',
+        '    name: Validate Member Serial',
+        '    description: Returns true if membersrl is 8-16 digits.',
+        'template:',
+        '  - name: PR template',
+        '    description: Summary, test plan, risks',
+        '    parent_key: pr',
       ].join('\n')
     );
     assert.strictEqual(parsed.length, 3);
@@ -36,21 +46,21 @@ test('Terminology & Coding Standards - parsing, inheritance, MCP tool, and Web U
       identifier: 'membersrl',
       content: 'Unique identifier for a customer, consisting of 8 to 16 digits.',
     });
-    assert.deepStrictEqual(parsed[1], {
-      type: 'function',
-      name: 'Validate Member Serial',
-      identifier: 'isValidMemberSrl(membersrl)',
-      content: 'Returns true if membersrl is 8-16 digits.',
-    });
+    assert.strictEqual(parsed[1].identifier, 'isValidMemberSrl(membersrl)');
     assert.deepStrictEqual(parsed[2], {
       type: 'template',
       name: 'PR template',
       content: 'Summary, test plan, risks',
+      parentKey: 'pr',
     });
 
     const formatted = formatStandardsText(JSON.stringify(parsed));
-    assert.match(formatted, /term \| Member Serial \| membersrl \| Unique identifier/);
-    assert.match(formatted, /template \| PR template \| Summary, test plan, risks/);
+    assert.match(formatted, /fides_key: membersrl/);
+    assert.deepStrictEqual(parseStandardsText(formatted), parsed);
+
+    assert.throws(() => parseStandardsText('bogus:\n  - name: x'), /Unknown standard type/);
+    assert.throws(() => parseStandardsText('term:\n  - fides_key: x'), /missing a name/);
+    assert.throws(() => parseStandardsText('term: [unclosed'), /Invalid YAML/);
   });
 
   await t.test('organization and goal standards are inherited into user context', () => {
@@ -131,7 +141,7 @@ test('Terminology & Coding Standards - parsing, inheritance, MCP tool, and Web U
         payload: body({
           name: 'Product Department',
           description: 'Defines product strategy',
-          standards: 'term | Order Number | ordno | 12-character alphanumeric order key.',
+          standards: 'term:\n  - fides_key: ordno\n    name: Order Number\n    description: 12-character alphanumeric order key.',
         }),
       });
       assert.strictEqual(save.statusCode, 302);
@@ -145,6 +155,33 @@ test('Terminology & Coding Standards - parsing, inheritance, MCP tool, and Web U
       assert.match(view.body, /Order Number/);
       assert.match(view.body, /<code>ordno<\/code>/);
       assert.match(view.body, /12-character alphanumeric order key/);
+    } finally {
+      await server.close();
+    }
+  });
+
+  await t.test('buildStandardsSkill renders inherited standards as a SKILL.md and is downloadable', async () => {
+    updateOrganization(ORG_IDS.PRODUCT, {
+      standards: [{ type: 'term', name: 'Order Number', identifier: 'ordno', content: '12-character order key.' }],
+    });
+    const skill = buildStandardsSkill(ORG_IDS.PRODUCT);
+    assert.ok(skill);
+    assert.match(skill.name, /-terminology$/);
+    assert.match(skill.content, new RegExp(`^---\\nname: ${skill.name}\\ndescription: "`));
+    assert.match(skill.content, /\*\*Order Number\*\* \(`ordno`\): 12-character order key\./);
+    assert.match(skill.content, /```yaml\n[\s\S]*- fides_key: ordno/);
+    assert.strictEqual(buildStandardsSkill('missing'), null);
+
+    const server = await createWebServer();
+    try {
+      const res = await server.inject({
+        method: 'GET',
+        url: `/organizations/${ORG_IDS.PRODUCT}/skill`,
+        headers: cookie(USER_IDS.JANE_SMITH),
+      });
+      assert.strictEqual(res.statusCode, 200);
+      assert.match(String(res.headers['content-type']), /text\/markdown/);
+      assert.match(res.body, /^---\nname: /);
     } finally {
       await server.close();
     }

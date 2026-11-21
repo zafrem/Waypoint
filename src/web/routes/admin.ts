@@ -18,6 +18,7 @@ import {
   updateGoal,
   deleteGoal,
   parseStandardsText,
+  formatStandardsText,
   periodLabel,
 } from '../../models/goal.js';
 import { Goal, GoalPeriodType } from '../../models/types.js';
@@ -450,6 +451,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         organizations,
         users,
         annualGoals: getAnnualGoals(),
+        standardsText: standards ?? '',
         error: 'Title and organization are required.',
         success: null,
       });
@@ -488,6 +490,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         organizations,
         users,
         annualGoals: getAnnualGoals(),
+        standardsText: standards ?? '',
         error: message,
         success: null,
       });
@@ -522,6 +525,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
       organizations,
       users,
       annualGoals: getAnnualGoals(),
+      standardsText: formatStandardsText(goal.standards),
       error: null,
       success: success || null,
     });
@@ -590,6 +594,7 @@ export async function adminRoutes(server: FastifyInstance): Promise<void> {
         organizations,
         users,
         annualGoals: getAnnualGoals(),
+        standardsText: standards ?? '',
         error: message,
         success: null,
       });

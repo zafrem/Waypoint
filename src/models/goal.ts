@@ -1,3 +1,4 @@
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { getDb } from '../db/index.js';
 import { Goal, GoalPeriodType, GoalRow, GoalStatus, GoalVisibility, Standard, StandardType, toGoal } from './types.js';
 import { addParticipant } from './participant.js';
@@ -264,50 +265,69 @@ export function parseStandards(json: string | null | undefined): Standard[] {
 }
 
 /**
- * One standard per line:
- * - 3 columns: `type | name | content`
- * - 4 columns: `type | name | identifier | content`
- *   (e.g., `term | Member Serial | membersrl | Unique identifier for a customer, consisting of 8 to 16 digits.`)
- * Throws on an unknown type or missing name.
+ * Fideslang-style YAML (https://ethyca.github.io/fideslang/): a top-level key per standard type,
+ * each holding a list of entries with `fides_key` (the identifier), `name`, `description`
+ * and an optional `parent_key`:
+ *
+ *   term:
+ *     - fides_key: membersrl
+ *       name: Member Serial
+ *       description: Unique identifier for a customer, consisting of 8 to 16 digits.
+ *
+ * Throws on invalid YAML, an unknown type, or an entry without a name.
  */
 export function parseStandardsText(text: string | undefined): Standard[] {
+  if (!text?.trim()) return [];
+  let doc: unknown;
+  try {
+    doc = parseYaml(text);
+  } catch (err) {
+    throw new Error(`Invalid YAML: ${err instanceof Error ? err.message : String(err)}`);
+  }
+  if (doc === null || doc === undefined) return [];
+  if (typeof doc !== 'object' || Array.isArray(doc)) {
+    throw new Error(`Standards must be a YAML map keyed by type (${STANDARD_TYPES.join(', ')}).`);
+  }
   const standards: Standard[] = [];
-  for (const line of (text ?? '').split('\n')) {
-    if (!line.trim()) continue;
-    const parts = line.split('|').map((part) => part.trim());
-    const type = parts[0];
-    const name = parts[1];
+  for (const [type, entries] of Object.entries(doc as Record<string, unknown>)) {
     if (!STANDARD_TYPES.includes(type as StandardType)) {
       throw new Error(`Unknown standard type "${type}" (use ${STANDARD_TYPES.join(', ')}).`);
     }
-    if (!name) {
-      throw new Error(`Standard "${line.trim()}" is missing a name.`);
+    if (entries === null) continue;
+    if (!Array.isArray(entries)) {
+      throw new Error(`"${type}" must be a list of entries.`);
     }
-    if (parts.length >= 4) {
-      const identifier = parts[2] || null;
-      const content = parts.slice(3).join(' | ').trim();
+    for (const entry of entries) {
+      const e = (entry ?? {}) as Record<string, unknown>;
+      const name = typeof e.name === 'string' ? e.name.trim() : '';
+      if (!name) {
+        throw new Error(`A "${type}" entry is missing a name.`);
+      }
+      const identifier = e.fides_key != null ? String(e.fides_key).trim() : '';
+      const parentKey = e.parent_key != null ? String(e.parent_key).trim() : '';
       standards.push({
         type: type as StandardType,
         name,
         ...(identifier ? { identifier } : {}),
-        content,
+        content: e.description != null ? String(e.description).trim() : '',
+        ...(parentKey ? { parentKey } : {}),
       });
-    } else {
-      const content = parts.slice(2).join(' | ').trim();
-      standards.push({ type: type as StandardType, name, content });
     }
   }
   return standards;
 }
 
 export function formatStandardsText(json: string | null | undefined): string {
-  return parseStandards(json)
-    .map((s) =>
-      s.identifier
-        ? `${s.type} | ${s.name} | ${s.identifier} | ${s.content}`
-        : `${s.type} | ${s.name} | ${s.content}`
-    )
-    .join('\n');
+  const grouped: Record<string, Record<string, string>[]> = {};
+  for (const s of parseStandards(json)) {
+    (grouped[s.type] ??= []).push({
+      ...(s.identifier ? { fides_key: s.identifier } : {}),
+      name: s.name,
+      ...(s.content ? { description: s.content } : {}),
+      ...(s.parentKey ? { parent_key: s.parentKey } : {}),
+    });
+  }
+  return Object.keys(grouped).length ? stringifyYaml(grouped, { lineWidth: 0 }) : '';
 }
 
 const ANNUAL_PERIOD = /^\d{4}$/;

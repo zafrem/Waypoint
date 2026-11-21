@@ -27,7 +27,7 @@ ${typeof error !== 'undefined' && error ? `<div class="alert alert-error">${esc(
 
       <div class="form-group">
         <label for="standards">Terminology &amp; Coding Standards</label>
-        <textarea id="standards" name="standards" rows="6" placeholder="term | Member Serial | membersrl | Unique identifier for a customer, consisting of 8 to 16 digits.&#10;function | Validate Member Serial | isValidMemberSrl(membersrl) | Returns true if membersrl is an 8-16 digit string.">${esc(typeof standardsText !== 'undefined' ? standardsText : '')}</textarea>
+        <textarea id="standards" name="standards" rows="6" placeholder="term:&#10;  - fides_key: membersrl&#10;    name: Member Serial&#10;    description: Unique identifier for a customer, consisting of 8 to 16 digits.&#10;function:&#10;  - fides_key: isValidMemberSrl(membersrl)&#10;    name: Validate Member Serial&#10;    description: Returns true if membersrl is an 8-16 digit string.">${esc(typeof standardsText !== 'undefined' ? standardsText : '')}</textarea>
         <small class="form-help">One per line: <code>type | name | identifier | description</code> (or <code>type | name | description</code>), where type is <code>term</code>, <code>variable</code>, <code>metadata</code>, <code>function</code>, <code>document</code>, <code>ui_element</code>, or <code>template</code>. Child organizations inherit these automatically.</small>
       </div>
 

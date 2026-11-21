@@ -2,6 +2,7 @@
 <div class="page-header">
   <div class="page-header-content">
     <h1>${esc(organization.name)}</h1>
+    <a href="/organizations/${organization.id}/skill" class="btn">Download Skill</a>
     ${user && user.isAdmin ? `<a href="/organizations/${organization.id}/edit" class="btn btn-primary">Edit Organization</a>` : ''}
   </div>
   <p class="page-subtitle">${esc(organization.description || 'No description')}</p>
